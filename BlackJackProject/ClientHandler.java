@@ -27,7 +27,8 @@ public class ClientHandler implements Runnable{
 			ObjectOutputStream objectOutputStream= new ObjectOutputStream(outputStream);
 			
 			userData = userDataFile.getUserList();
-			
+
+			//Waiting for message type login
 			while(true) {
 				ClientMessage fromClient = (ClientMessage) objectInputStream.readObject();
 				if(fromClient.getType() == MessageType.LOGIN) {
@@ -50,22 +51,6 @@ public class ClientHandler implements Runnable{
 						System.out.println(user.getBankroll());*/
 					}
 						
-					
-					
-					/*System.out.println(fromClient.getUsername());
-					if(fromClient.getUsername().equals("bob")) {
-						response = new Response();
-						response.setType(ResponseType.LOGIN_SUCCESS);
-						response.setValidated(true);
-						response.setDealer(true);
-						response.setPlayerID(1);
-						objectOutputStream.writeObject(response);
-						break;
-					}else {
-						response = new Response();
-						response.setType(ResponseType.LOGIN_FAIL);
-						objectOutputStream.writeObject(response);
-					}*/
 					//send success with player information
 				}
 			}
