@@ -3,14 +3,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.io.EOFException;
 
 public class ClientHandler implements Runnable{
 	private final Socket clientSocket;
-	
-	public ClientHandler(Socket socket)
+	Response response;
+	LoadUserData userDataFile;
+	List<UserData> userData;
+	private int playerID;
+	GameManager gameManager;
+	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager)
 		{
 			clientSocket=socket;
+			this.userDataFile = userDataFile;
+			this.gameManager = gameManager;
 		}
 	
 	public void run()
@@ -18,39 +25,56 @@ public class ClientHandler implements Runnable{
 	{
 		try 
 		{
-		
 			OutputStream outputStream= clientSocket.getOutputStream();
 			ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			ObjectOutputStream objectOutputStream= new ObjectOutputStream(outputStream);
 			
+			userData = userDataFile.getUserList();
 			
-			Message fromClient = (Message) objectInputStream.readObject();
-			
-			
-			if(fromClient.getType().compareTo(Type.LOGIN)==0)
-				
-			{
-				fromClient.setStatus(Type.SUCCESS);
-				objectOutputStream.writeObject(fromClient);
-								
-				while(true) {
-					Message m=(Message) objectInputStream.readObject();
-					
-					if(m.getType().compareTo(Type.TEXT)==0)
-					{
-						String capitalizer= m.getText().toUpperCase();
-						m.setText(capitalizer);
-						objectOutputStream.writeObject(m);
+			while(true) {
+				ClientMessage fromClient = (ClientMessage) objectInputStream.readObject();
+				if(fromClient.getType() == MessageType.LOGIN) {
+					//Some validation
+					for(int i = 0; i < userData.size(); i++) {
+						UserData user = userData.get(i);
+						if((fromClient.getUsername().compareTo(user.getUsername())== 0) && (fromClient.getPassword().compareTo(user.getPassword()) == 0)){
+							response = new Response();
+							response.setPlayerID(gameManager.getPlayerID());
+							response.setType(ResponseType.LOGIN_SUCCESS);
+							objectOutputStream.writeObject(response);
+						}
+						
+						
+						/*System.out.println(user.getUsername());
+						System.out.println(user.getPassword());
+						System.out.println(user.getIsDealer());
+						System.out.println(user.getWinAmount());
+						System.out.println(user.getLossAmount());
+						System.out.println(user.getBankroll());*/
 					}
-					else if(m.getType().compareTo(Type.LOGOUT)==0)
-					{
-
-						m.setStatus(Type.FAILED);
-						objectOutputStream.writeObject(m);
+						
 					
-					}
+					
+					/*System.out.println(fromClient.getUsername());
+					if(fromClient.getUsername().equals("bob")) {
+						response = new Response();
+						response.setType(ResponseType.LOGIN_SUCCESS);
+						response.setValidated(true);
+						response.setDealer(true);
+						response.setPlayerID(1);
+						objectOutputStream.writeObject(response);
+						break;
+					}else {
+						response = new Response();
+						response.setType(ResponseType.LOGIN_FAIL);
+						objectOutputStream.writeObject(response);
+					}*/
+					//send success with player information
 				}
 			}
+			
+			
+		
 		
 
 	}

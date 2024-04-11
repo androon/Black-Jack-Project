@@ -1,4 +1,6 @@
-public class ClientMessage {
+import java.io.Serializable;
+
+public class ClientMessage implements Serializable{
 	private String username;
 	private String password;
 	private boolean isDealer;
@@ -24,7 +26,7 @@ public class ClientMessage {
 		this.type = MessageType.UNKNOWN;
 	}
 	
-	public String getUser() {
+	public String getUsername() {
 		return this.username;
 	}
 	
