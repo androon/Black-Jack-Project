@@ -13,18 +13,15 @@ public class ClientHandler implements Runnable{
 	List<UserData> userData;
 	private int playerID;
 	GameManager gameManager;
-	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager)
-		{
+	
+	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager){
 			clientSocket=socket;
 			this.userDataFile = userDataFile;
 			this.gameManager = gameManager;
 		}
 	
-	public void run()
-	
-	{
-		try 
-		{
+	public void run() {
+		try {
 			OutputStream outputStream= clientSocket.getOutputStream();
 			ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 			ObjectOutputStream objectOutputStream= new ObjectOutputStream(outputStream);
@@ -78,17 +75,14 @@ public class ClientHandler implements Runnable{
 		
 
 	}
-		catch(EOFException e)
-		{
+		catch(EOFException e){
 			//System.out.println("whjen is it closeing this");	
 			//e.printStackTrace();
 		}
-		catch (IOException e) 
-			{
+		catch (IOException e) {
 				e.printStackTrace();
 			} 
-		catch (ClassNotFoundException e) 
-			{
+		catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			}
 	}
