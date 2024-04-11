@@ -25,9 +25,9 @@ public class ClientHandler implements Runnable{
 	
 	public void run() {
 		try {
-			outputStream= clientSocket.getOutputStream();
+			outputStream = clientSocket.getOutputStream();
 			objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-			objectOutputStream= new ObjectOutputStream(outputStream);
+			objectOutputStream = new ObjectOutputStream(outputStream);
 			
 			userData = userDataFile.getUserList();
 
