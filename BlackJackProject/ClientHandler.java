@@ -13,6 +13,9 @@ public class ClientHandler implements Runnable{
 	List<UserData> userData;
 	private int playerID;
 	GameManager gameManager;
+	OutputStream outputStream;
+	ObjectInputStream objectInputStream;
+	ObjectOutputStream objectOutputStream;
 	
 	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager){
 			clientSocket=socket;
@@ -22,9 +25,9 @@ public class ClientHandler implements Runnable{
 	
 	public void run() {
 		try {
-			OutputStream outputStream= clientSocket.getOutputStream();
-			ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-			ObjectOutputStream objectOutputStream= new ObjectOutputStream(outputStream);
+			outputStream= clientSocket.getOutputStream();
+			objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+			objectOutputStream= new ObjectOutputStream(outputStream);
 			
 			userData = userDataFile.getUserList();
 
