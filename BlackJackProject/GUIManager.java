@@ -20,17 +20,18 @@ public class GUIManager {
 	public void getLogin() throws UnknownHostException, IOException, ClassNotFoundException {
 		while(true) {
 			Scanner myScanner = new Scanner(System.in);
-			this.clientSocket = new Socket(address, 777);
-			OutputStream outputStream= clientSocket.getOutputStream();
-			ObjectOutputStream objectOutputStream= new ObjectOutputStream(outputStream);
+			clientSocket = new Socket(address, 777);
+			OutputStream outputStream = clientSocket.getOutputStream();
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 			
 			ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+			
 			ClientMessage login= new ClientMessage();
 			System.out.println("Enter username:");
 			String username = myScanner.nextLine();
-			
 			System.out.println("Enter password:");
 			String password = myScanner.nextLine();
+			
 			login.setUsername(username);
 			login.setPassword(password);
 			login.setMessageType(MessageType.LOGIN);
@@ -38,7 +39,7 @@ public class GUIManager {
 			objectOutputStream.writeObject(login);
 			
 			
-			//debugging
+			//debugging - receive server response
 			Response serverResponse = (Response) objectInputStream.readObject();
 			if(serverResponse.getType() == ResponseType.LOGIN_SUCCESS) {
 				System.out.println(serverResponse.getPlayerID());
