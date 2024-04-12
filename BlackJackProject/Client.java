@@ -9,6 +9,10 @@ import java.util.Scanner;
 
 public class Client {
 	private GUIManager gui;
+	Socket clientSocket;
+	OutputStream outputStream;
+	ObjectOutputStream objectOutputStream;
+	ObjectInputStream objectInputStream;
 	
 	public static void main(String[]  args) throws  IOException, ClassNotFoundException 
 	{
@@ -22,11 +26,25 @@ public class Client {
 				System.out.println("Enter Server Address");
 				
 				String address = myScanner.nextLine();
-				gui = new GUIManager(this, address);
+				clientSocket = new Socket(address, 777);
+				objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+				objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+				gui = new GUIManager(this, address, clientSocket, objectOutputStream, objectInputStream);
+				
 				gui.getLogin();
 
 				
 	}
+	
+	public void sendBetRequest(int playerID, int betAmount) throws IOException {
+		ClientMessage betMessage = new ClientMessage();
+		betMessage.setPlayerID(playerID);
+		betMessage.setBetAmount(betAmount);
+		betMessage.setMessageType(MessageType.BET);
+		objectOutputStream.writeObject(betMessage);
+	}
+	
+	
 }
 
 
