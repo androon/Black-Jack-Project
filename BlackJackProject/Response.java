@@ -8,6 +8,7 @@ public class Response implements Serializable{
 	private int winAmount;
 	private int lossAmount;
 	private int bankRoll;
+	private String username;
 	//private GamePlayers gamePlayers;
 	
 	public Response() {
@@ -24,6 +25,10 @@ public class Response implements Serializable{
 		return this.type;
 	}
 	
+	public String getUsername() {
+		return this.username;
+	}
+	
 	public boolean getValidated() {
 		return this.validated;
 	}
@@ -34,6 +39,18 @@ public class Response implements Serializable{
 	
 	public boolean getIsDealer() {
 		return this.isDealer;
+	}
+	
+	public int getBankroll() {
+		return this.bankRoll;
+	}
+	
+	public int getWinAmount() {
+		return this.winAmount;
+	}
+	
+	public int getLossAmount() {
+		return this.lossAmount;
 	}
 	
 	public void setType(ResponseType type) {
@@ -62,5 +79,9 @@ public class Response implements Serializable{
 	
 	public void setBankRoll(int bankRoll) {
 		this.bankRoll = bankRoll;
+	}
+	
+	public void setUsername(String username) {
+		this.username = username;
 	}
 }

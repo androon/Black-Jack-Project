@@ -35,6 +35,7 @@ public class ClientHandler implements Runnable{
 			while(true) {
 				ClientMessage fromClient = (ClientMessage) objectInputStream.readObject();
 				if(fromClient.getType() == MessageType.LOGIN) {
+					boolean match = false;
 					//Some validation
 					for(int i = 0; i < userData.size(); i++) {
 						UserData user = userData.get(i);
@@ -42,19 +43,24 @@ public class ClientHandler implements Runnable{
 							response = new Response();
 							response.setPlayerID(gameManager.getPlayerID());
 							response.setType(ResponseType.LOGIN_SUCCESS);
+							response.setWinAmount(user.getWinAmount());
+							response.setLossAmount(user.getLossAmount());
+							response.setBankRoll(user.getBankroll());
+							response.setUsername(user.getUsername());
 							objectOutputStream.writeObject(response);
+							
+							match = true;
+							break;
 						}
-						
-						
-						/*System.out.println(user.getUsername());
-						System.out.println(user.getPassword());
-						System.out.println(user.getIsDealer());
-						System.out.println(user.getWinAmount());
-						System.out.println(user.getLossAmount());
-						System.out.println(user.getBankroll());*/
 					}
-						
-					//send success with player information
+					if(!match) {
+						response = new Response();
+						response.setType(ResponseType.LOGIN_FAIL);
+						objectOutputStream.writeObject(response);
+					}
+				}else if(fromClient.getType() == MessageType.BET) {
+					//go to game player data and add bet to player in game
+					System.out.println("Player wants to make a bet");
 				}
 			}
 			

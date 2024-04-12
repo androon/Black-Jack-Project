@@ -97,7 +97,7 @@ public class ClientMessage implements Serializable{
 		this.lossAmount = lossAmount;
 	}
 	
-	public void setBet(int betAmount) {
+	public void setBetAmount(int betAmount) {
 		this.betAmount = betAmount;
 	}
 	
