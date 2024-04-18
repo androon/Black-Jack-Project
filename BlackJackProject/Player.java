@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Scanner;
 
 public class Player {
@@ -8,55 +9,62 @@ public class Player {
 	private int numWin;
 	private int numLoss;
 	private Client client;
-	
-	public Player(String username, int playerID, int bankRoll, int numWin, int numLoss, Client client) throws IOException {
+	ObjectInputStream objectInputStream;
+	public Player(String username, int playerID, int bankRoll, int numWin, int numLoss, Client client, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
 		this.username = username;
 		this.playerID = playerID;
 		this.numWin = numWin;
 		this.numLoss = numLoss;
 		this.client = client;
 		this.bankRoll = bankRoll;
+		this.objectInputStream = objectInputStream;
 		displayGUI();
 	}
 	
-	private void displayGUI() throws IOException {
+	private void displayGUI() throws IOException, ClassNotFoundException {
+		//If message recieved = player turn - enable buttons
+		
 		Scanner myScanner = new Scanner(System.in);
 		System.out.println(username);
 		System.out.println(playerID);
 		System.out.println(numWin);
 		System.out.println(numLoss);
 		System.out.println(bankRoll);
-
+		
+		placeBet();
 		
 		while(true) {
-			System.out.println("1. place bet");
-			System.out.println("2. hit");
-			System.out.println("3. stand");
-			System.out.println("4. double down");
-			int choice = myScanner.nextInt();
-			switch(choice) {
-				case 1:
-					placeBet();
-					break;
-				case 2:
-					System.out.println(playerID);
-					break;
-					
-				case 3: 
-					System.out.println(numWin);
-					break;
-					
-				case 4:
-					System.out.println(numLoss);
-					break;
-					
-				case 5:
-					System.out.println(bankRoll);
-					break;
+			
+			Response fromServer = (Response) objectInputStream.readObject();
+			if(fromServer.getType() == ResponseType.PLAYER_TURN) {
+				
+				System.out.println("1. hit");
+				System.out.println("2. stand");
+				System.out.println("3. double down");
+				int choice = myScanner.nextInt();
+				switch(choice) {
+					case 1:
+						hit();
+						break;
+						
+					case 2:
+						stand();
+						break;
+							
+					case 3: 
+						doubleDown();
+						break;
+						
+					case 9:
+						debug();
+						break;
+						
+					}
+				}
 			}
 		}
 
-	}
+
 	
 	public void placeBet() throws IOException {
 		Scanner placeBetScanner = new Scanner(System.in);
@@ -75,5 +83,9 @@ public class Player {
 	
 	public void doubleDown() throws IOException{
 		client.sendDoubleDownRequest(playerID);
+	}
+	
+	public void debug() throws IOException{
+		client.debug();
 	}
 }
