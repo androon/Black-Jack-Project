@@ -44,6 +44,26 @@ public class Client {
 		objectOutputStream.writeObject(betMessage);
 	}
 	
+	public void sendHitRequest(int playerID) throws IOException {
+		ClientMessage hitMessage = new ClientMessage();
+		hitMessage.setPlayerID(playerID);
+		hitMessage.setMessageType(MessageType.HIT);
+		objectOutputStream.writeObject(hitMessage);
+	}
+	
+	public void sendStandRequest(int playerID) throws IOException{
+		ClientMessage standMessage = new ClientMessage();
+		standMessage.setPlayerID(playerID);
+		standMessage.setMessageType(MessageType.STAND);
+		objectOutputStream.writeObject(standMessage);
+	}
+	
+	public void sendDoubleDownRequest(int playerID) throws IOException{
+		ClientMessage doubledownMessage = new ClientMessage();
+		doubledownMessage.setPlayerID(playerID);
+		doubledownMessage.setMessageType(MessageType.DOUBLE_DOWN);
+		objectOutputStream.writeObject(doubledownMessage);
+	}
 	
 }
 

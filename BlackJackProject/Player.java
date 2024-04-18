@@ -36,7 +36,6 @@ public class Player {
 			int choice = myScanner.nextInt();
 			switch(choice) {
 				case 1:
-					System.out.println(username);
 					placeBet();
 					break;
 				case 2:
@@ -64,7 +63,17 @@ public class Player {
 		System.out.println("How much do you want to bet?");
 		int betAmount = placeBetScanner.nextInt();	
 		client.sendBetRequest(playerID, betAmount);
-		//placeBetScanner.close();
-		return;
+	}
+	
+	public void hit() throws IOException{
+		client.sendHitRequest(playerID);
+	}
+	
+	public void stand() throws IOException{
+		client.sendStandRequest(playerID);
+	}
+	
+	public void doubleDown() throws IOException{
+		client.sendDoubleDownRequest(playerID);
 	}
 }
