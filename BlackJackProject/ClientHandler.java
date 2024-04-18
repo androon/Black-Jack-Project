@@ -53,6 +53,7 @@ public class ClientHandler implements Runnable{
 							break;
 						}
 					}
+					
 					if(!match) {
 						response = new Response();
 						response.setType(ResponseType.LOGIN_FAIL);
@@ -61,6 +62,12 @@ public class ClientHandler implements Runnable{
 				}else if(fromClient.getType() == MessageType.BET) {
 					//go to game player data and add bet to player in game
 					System.out.println("Player wants to make a bet");
+				}else if(fromClient.getType() == MessageType.HIT) {
+					System.out.println("player wants to hit");
+				}else if(fromClient.getType() == MessageType.STAND) {
+					System.out.println("player wants to stand");
+				}else if(fromClient.getType() == MessageType.DOUBLE_DOWN) {
+					System.out.println("Player wants to double down");
 				}
 			}
 			
