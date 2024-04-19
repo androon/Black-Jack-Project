@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
-
+//Purpose: Request login and determine GUI
 public class GUIManager {
 	Client client;
 	String address;
@@ -63,15 +63,19 @@ public class GUIManager {
 					//Use to break out of loop
 					this.loginSuccess = true;
 					
-					Player player = new Player(username, playerID, bankRoll, winAmount, lossAmount, client);
+					Player player = new Player(username, playerID, bankRoll, winAmount, lossAmount, client, objectInputStream);
 					
+				}else if(serverResponse.getType() == ResponseType.LOGIN_SUCCESS && serverResponse.getIsDealer() == true) {
+					System.out.println(serverResponse.getIsDealer());
+					this.loginSuccess = true;
+					Dealer dealer = new Dealer(client, serverResponse.getPlayerID(), serverResponse.getIsDealer());
 				}else if(serverResponse.getType() == ResponseType.LOGIN_FAIL) {
 					this.loginSuccess = false;
-				}
 			}
 			
 			
 		
 		
+		}
 	}
 }

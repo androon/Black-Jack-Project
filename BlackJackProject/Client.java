@@ -65,6 +65,25 @@ public class Client {
 		objectOutputStream.writeObject(doubledownMessage);
 	}
 	
+	public void sendStartRoundRequest() throws IOException {
+		ClientMessage startRoundMessage = new ClientMessage();
+		startRoundMessage.setMessageType(MessageType.START_ROUND);
+		objectOutputStream.writeObject(startRoundMessage);
+	}
+	
+	public void sendEndRoundRequest() throws IOException{
+		ClientMessage endRoundMessage = new ClientMessage();
+		endRoundMessage.setMessageType(MessageType.END_ROUND);
+		objectOutputStream.writeObject(endRoundMessage);
+	}
+	
+	
+	public void debug() throws IOException{
+		ClientMessage debug = new ClientMessage();
+		debug.setMessageType(MessageType.DEBUG);
+		objectOutputStream.writeObject(debug);
+	}
+	
 }
 
 
