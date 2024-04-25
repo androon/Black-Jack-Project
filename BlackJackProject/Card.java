@@ -9,8 +9,5 @@ class Card {
     public int getValue() {
         return value;
     }
-
-    public String toString() {
-        return "Card: " + value;
-    }
+    
 }

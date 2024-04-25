@@ -4,22 +4,21 @@ import java.util.Collections;
 
 class Deck {
     private Queue<Card> cards;
-    private int numberOfDecks;
 
-    public Deck(int numberOfDecks) {
-        this.numberOfDecks = numberOfDecks;
+    public Deck() {
         cards = new LinkedList<>();
         initializeDeck();
     }
     
     public void initializeDeck() {
-        cards.clear();
-        for (int deck = 0; deck < numberOfDecks; deck++) {
-            for (int i = 0; i < 4; i++) { 
-                for (int j = 1; j <= 13; j++) {
-                    cards.add(new Card(j));
-                }
-            }
+        for(int i = 0; i < 8; i++) {
+        	for(int j = 1; j <= 9; j++) {
+        		cards.add(new Card(j));
+        	}
+        }
+        
+        for(int i = 0; i < 32; i++) {
+        	cards.add(new Card(10));
         }
     }
     
