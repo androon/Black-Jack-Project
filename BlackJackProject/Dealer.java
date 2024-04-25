@@ -29,16 +29,14 @@ public class Dealer {
         	
         	Scanner scan=new Scanner(System.in);
             int choice;
-        	while(!roundStart) {
-	        	System.out.println("1.Start Round");
-	        	choice = scan.nextInt();
-	            if(choice == 1) {
-		           start_Round();
-		           roundStart = true;
-		        }
-        	}
-        	Response fromServer = (Response) objectInputStream.readObject();
-            if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
+            Response fromServer = (Response) objectInputStream.readObject();
+        	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
+        		System.out.println("1.Start Round");
+	            choice = scan.nextInt();
+		            if(choice == 1) {
+			           start_Round();
+			        }
+        	}else if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
 	            System.out.println("1.Dealer Hit");
 	            choice = scan.nextInt();
 		            if(choice == 1) {

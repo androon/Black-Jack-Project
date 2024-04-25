@@ -5,8 +5,8 @@ public class GameManager {
 	private Deck deck;
 	private GameLogic gameLogic;
 	public GameManager() {
-		deck = new Deck();
-		gameLogic = new GameLogic(getDeck());
+		gameLogic = new GameLogic();
+		resetDeck();
 	}
 	
 	public int getPlayerID() {
@@ -21,5 +21,11 @@ public class GameManager {
 	
 	public GameLogic getGameLogic() {
 		return gameLogic;
+	}
+	
+	public void resetDeck() {
+		deck = new Deck();
+		deck.shuffle();
+		gameLogic.setDeck(deck);
 	}
 }

@@ -21,6 +21,7 @@ public class Server {
 	private int currPlayerRequest = 1;
 	private boolean allPlayersDone = false;
 	private int currPlayerDoneCheck = 1;
+	private int currClientHandler = 0;
 	
 	public static void main(String[]  args) throws IOException, ClassNotFoundException {
 		loadData = new LoadUserData();
@@ -151,7 +152,7 @@ public class Server {
 	}
 	
 	public boolean checkAllPlayersDone() {
-		boolean allPlayersDone = false;
+		allPlayersDone = false;
 		int count = 1;
 		while(allPlayersDone == false) {
 			System.out.println("Waiting for players to finish");
@@ -169,6 +170,58 @@ public class Server {
 			}
 		}
 		return true;
+	}
+	
+	public void resetGame() throws IOException {
+		//Reset bookkeeping
+		allPlayersDone = false;
+		currPlayer = 1;
+		currPlayerBet = 1;
+		currPlayerRequest = 1;
+		allPlayersDone = false;
+		currPlayerDoneCheck = 1;
+		gameManager.resetDeck();
+		
+		
+		//Reseting all client handlers for next round
+		boolean allClientHandlerReset = false;
+		int count = 0;
+		while(!allClientHandlerReset) {
+			System.out.println("reset");
+			for(int i = 0; i < clients.size(); i++) {
+				ClientHandler clientHandler = clients.get(i);
+				if(clientHandler.getClientHandlerID() == currClientHandler) {
+					clientHandler.reset();
+					currClientHandler++;
+					count++;
+				}
+			}
+			if(count == clients.size()) {
+				allClientHandlerReset = true;
+			}
+		}
+		
+		currClientHandler = 0;
+		
+		//Reset gamePlayers
+		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
+		for(int i = 0; i < clients.size(); i++) {
+			PlayerData currPlayer = allGamePlayers.get(i);
+			if(currPlayer.getPlayerID() == 0) {
+				currPlayer.setHandValue(0);
+			}else {
+				currPlayer.reset();
+			}
+			currPlayer.resetHand();
+		}
+		
+		//Request dealer to start round again
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+			if(clientHandler.getClientHandlerID() == 0) {
+				clientHandler.requestStartRound();
+			}
+		}
 	}
 }
 

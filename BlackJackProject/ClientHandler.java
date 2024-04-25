@@ -25,7 +25,7 @@ public class ClientHandler implements Runnable{
 	private boolean turnEnd = false;
 	private boolean isDealer = false;
 	
-	private int handAfterHit = 0;
+	private int handVal = 0;
 	
 	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager, GamePlayers gamePlayers, Server server){
 			clientSocket=socket;
@@ -56,21 +56,65 @@ public class ClientHandler implements Runnable{
 					addPlayerBet(fromClient, allGamePlayers);
 				}else if(fromClient.getType() == MessageType.HIT) {
 					GameLogic gameLogic = gameManager.getGameLogic();
-					handAfterHit = gameLogic.addCardToPlayer(fromClient, allGamePlayers);
-					System.out.println("Hand after hit: " + handAfterHit);
+					PlayerData dealerData = null;
+					handVal = gameLogic.addCardToPlayer(fromClient, allGamePlayers);
+					System.out.println("Hand after hit: " + handVal);
+					
+					//Logic for dealer after hit
 					if(isDealer == true) {
+						
+						//Find dealer in the list
+						for(int i = 0; i < allGamePlayers.size(); i++) {
+							PlayerData dealerCheck = allGamePlayers.get(i);
+							if(dealerCheck.getPlayerID() == playerID) {
+								dealerData = dealerCheck;
+							}
+						}
+						
+						//If dealer has a hand with ace check if its over 17
+						if(dealerData.getHandWithAce() != 0) {
+							if(dealerData.getHandWithAce() >= 17 && dealerData.getHandWithAce() <= 21) {
+								dealerData.setHandValue(dealerData.getHandWithAce());
+							}
+						}
+						
+						//assign handVal to dealers current hand to determine action
+						handVal = dealerData.getHandValue();
+						
 						response = new Response();
-						if(handAfterHit < 17) {
+						if(handVal < 17) {
 							response.setType(ResponseType.REQUEST_DEALER_HIT);
-						}else if(handAfterHit >= 17 && handAfterHit <= 21) {
+						}else if(handVal >= 17 && handVal <= 21) {
 							response.setType(ResponseType.REQUEST_END_ROUND);
-						}else if(handAfterHit > 21) {
+						}else if(handVal > 21) {
 							dealerAutoLose();
 							response.setType(ResponseType.REQUEST_END_ROUND);
 						}
 						objectOutputStream.writeObject(response);
-					}else {
-						if(handAfterHit <= 21) {
+					}
+					
+					
+					//Logic for player after hit
+					else {
+						PlayerData playerData = null;
+						//Find player in list
+						for(int i = 0; i < allGamePlayers.size(); i++) {
+							PlayerData playerCheck = allGamePlayers.get(i);
+							if(playerCheck.getPlayerID() == playerID) {
+								playerData = playerCheck;
+							}
+						}
+						
+						//Get handValue after card is added
+						handVal = playerData.getHandValue();
+						//Check if player has an ace
+						if(playerData.getHandWithAce() != 0) {
+							System.out.println("Regular Hand: " + handVal);
+							System.out.println("Ace Hand: " + playerData.getHandWithAce());
+						}
+						
+						
+						if(handVal <= 21) {
 							response = new Response();
 							response.setType(ResponseType.PLAYER_TURN);
 							objectOutputStream.writeObject(response);
@@ -97,6 +141,10 @@ public class ClientHandler implements Runnable{
 						PlayerData gamePlayer = allGamePlayers.get(i);
 						if(fromClient.getPlayerID() == gamePlayer.getPlayerID()) {
 							gamePlayer.setStand();
+							//If player stands with ace in their hand, replace their hand value with value with ace
+							if(gamePlayer.getHandWithAce() != 0) {
+								gamePlayer.setHandValue(gamePlayer.getHandWithAce());
+							}
 							stand = true;
 							turnEnd = true;
 							break;
@@ -106,10 +154,13 @@ public class ClientHandler implements Runnable{
 				}else if(fromClient.getType() == MessageType.DOUBLE_DOWN) {
 					System.out.println("Player wants to double down");
 				}else if(fromClient.getType() == MessageType.START_ROUND) {
+					System.out.println("Dealer wants to start game");
+					
 					isDealer = true;
 					server.sendBetRequestToAllPlayers();
 					gameLogic.initialDeal(allGamePlayers);
 					server.checkBetPlaced();
+					debug(allGamePlayers);
 					server.findClient();
 					boolean allPlayersDone = false;
 					while(!allPlayersDone) {
@@ -131,13 +182,13 @@ public class ClientHandler implements Runnable{
 								}
 							}
 						}
-						response = new Response();
-						response.setType(ResponseType.ALL_PLAYERS_DONE);
-						objectOutputStream.writeObject(response);
 					}
-					System.out.println("Dealer wants to start game");
+					
 				}else if(fromClient.getType() == MessageType.END_ROUND) {
 					System.out.println("Dealer wants to end game");
+					gameLogic.checkOutcome(allGamePlayers);
+					server.resetGame();
+					gameLogic.reset();
 				}
 			}
 	
@@ -171,10 +222,14 @@ public class ClientHandler implements Runnable{
 					response.setType(ResponseType.LOGIN_SUCCESS);
 					playerID = 0;
 					//Adding dealer to the game
-					PlayerData dealer = new PlayerData(user.getUsername(), 0);
+					PlayerData dealer = new PlayerData(user.getUsername(), 0, 0, true);
 					gamePlayers.addPlayer(dealer);
 					
 					//writing response to client
+					objectOutputStream.writeObject(response);
+					
+					response = new Response();
+					response.setType(ResponseType.REQUEST_START_ROUND);
 					objectOutputStream.writeObject(response);
 				}else {
 					response = new Response();
@@ -186,7 +241,7 @@ public class ClientHandler implements Runnable{
 					response.setBankRoll(user.getBankroll());
 					response.setUsername(user.getUsername());
 					
-					PlayerData player = new PlayerData(user.getUsername(), playerID);
+					PlayerData player = new PlayerData(user.getUsername(), playerID, user.getBankroll(), false);
 					gamePlayers.addPlayer(player);
 					objectOutputStream.writeObject(response);
 				}
@@ -243,6 +298,12 @@ public class ClientHandler implements Runnable{
 		objectOutputStream.writeObject(response);
 	}
 	
+	public void requestStartRound() throws IOException {
+		response = new Response();
+		response.setType(ResponseType.REQUEST_START_ROUND);
+		objectOutputStream.writeObject(response);
+	}
+	
 	public boolean getStandState() {
 		return stand;
 	}
@@ -259,17 +320,42 @@ public class ClientHandler implements Runnable{
 		for(int i = 0; i < allGamePlayers.size(); i++) {
 			System.out.println("DEBUG SETTING");
 			PlayerData gamePlayer = allGamePlayers.get(i);
+			List<Card> hand = gamePlayer.getCardsInHand();
+			Card card1 = hand.get(0);
+			Card card2 = hand.get(1);
+			System.out.println("First Card: " + card1.getValue());
+			System.out.println("Second Card: " + card2.getValue());
+			
 			System.out.println("player" + "ID: " + gamePlayer.getPlayerID());
-			System.out.println("player" + i + "Bet: " + gamePlayer.getBetAmount());
-			System.out.println("player" + i + "Hand: " + gamePlayer.getHandValue());
-			System.out.println("player" + i + "Stand: " + gamePlayer.getStand());
-			System.out.println("player" + i + "Bust: " + gamePlayer.getBust());
+			System.out.println("player" + gamePlayer.getPlayerID() + " Bet: " + gamePlayer.getBetAmount());
+			System.out.println("player" + gamePlayer.getPlayerID() + " Hand: " + gamePlayer.getHandValue());
+			
+			
+			if(gamePlayer.getHandWithAce() != 0) {
+				System.out.println(gamePlayer.getPlayerID() + " Hand with ace: " + gamePlayer.getHandWithAce());
+			}
+			
+			
+			
+			System.out.println("player" + gamePlayer.getPlayerID() + " Stand: " + gamePlayer.getStand());
+			System.out.println("player" + gamePlayer.getPlayerID() + " Bust: " + gamePlayer.getBust());
 			response = new Response();
 		}
 	}
 	
 	public void dealerAutoLose() {
 		
+	}
+	
+	public void reset() {
+		if(isDealer == true) {
+			handVal = 0;
+		}else {
+			stand = false;
+			betPlaced = false;
+			turnEnd = false;
+			handVal = 0;
+		}
 	}
 }
 		
