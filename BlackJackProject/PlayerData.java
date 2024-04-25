@@ -5,6 +5,7 @@ public class PlayerData {
     private int handValue;
     private boolean playerStand;
     private int betAmount;
+    private boolean playerBust;
 
     public PlayerData(String userName, int playerID)
     {
@@ -34,6 +35,14 @@ public class PlayerData {
     {
         return betAmount;
     }
+    
+    public boolean getStand() {
+    	return playerStand;
+    }
+    
+    public boolean getBust() {
+    	return playerBust;
+    }
 
     public void setHandValue(int value)
     {
@@ -47,6 +56,10 @@ public class PlayerData {
     
     public void setStand() {
     	playerStand = true;
+    }
+    
+    public void setPlayerBust() {
+    	playerBust = true;
     }
     
     

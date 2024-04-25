@@ -18,6 +18,9 @@ public class Server {
 	ClientHandler clientHandler;
 	private int currPlayer = 1;
 	private int currPlayerBet = 1;
+	private int currPlayerRequest = 1;
+	private boolean allPlayersDone = false;
+	private int currPlayerDoneCheck = 1;
 	
 	public static void main(String[]  args) throws IOException, ClassNotFoundException {
 		loadData = new LoadUserData();
@@ -90,6 +93,27 @@ public class Server {
 		}
 	}
 	
+	
+	public void sendBetRequestToAllPlayers() throws IOException {
+		boolean allRequestsDone = false;
+		
+		while(!allRequestsDone) {
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+				if(clientHandler.getClientHandlerID() == currPlayerRequest) {
+					clientHandler.requestBet();
+					currPlayerRequest++;
+				}
+			}
+			if(currPlayerRequest == clients.size()) {
+				allRequestsDone = true;
+				break;
+			}
+		}
+	}
+
+	
+	
 	//Dealer starts round -> players make a bet -> only until all clienthandlers
 	//betplaced = true then go to requesting action from player
 	
@@ -126,5 +150,25 @@ public class Server {
 		}
 	}
 	
+	public boolean checkAllPlayersDone() {
+		boolean allPlayersDone = false;
+		int count = 1;
+		while(allPlayersDone == false) {
+			System.out.println("Waiting for players to finish");
+			for(int i = 0; i < clients.size(); i++) {
+				ClientHandler clientHandler = clients.get(i);
+				if(clientHandler.getClientHandlerID() == currPlayerDoneCheck) {
+					if(clientHandler.getTurnState()) {
+						currPlayerDoneCheck++;
+						count++;
+					}
+				}
+			}
+			if(count == clients.size()) {
+				allPlayersDone = true;
+			}
+		}
+		return true;
+	}
 }
 

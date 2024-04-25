@@ -68,7 +68,7 @@ public class GUIManager {
 				}else if(serverResponse.getType() == ResponseType.LOGIN_SUCCESS && serverResponse.getIsDealer() == true) {
 					System.out.println(serverResponse.getIsDealer());
 					this.loginSuccess = true;
-					Dealer dealer = new Dealer(client, serverResponse.getPlayerID(), serverResponse.getIsDealer());
+					Dealer dealer = new Dealer(client, serverResponse.getPlayerID(), serverResponse.getIsDealer(), objectInputStream);
 				}else if(serverResponse.getType() == ResponseType.LOGIN_FAIL) {
 					this.loginSuccess = false;
 			}

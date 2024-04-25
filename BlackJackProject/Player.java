@@ -25,17 +25,20 @@ public class Player {
 		//If message recieved = player turn - enable buttons
 		
 		Scanner myScanner = new Scanner(System.in);
-		System.out.println(username);
+		/*System.out.println(username);
 		System.out.println(playerID);
 		System.out.println(numWin);
 		System.out.println(numLoss);
 		System.out.println(bankRoll);
-		
-		placeBet();
+		*/
 		
 		while(true) {
 			
+			
 			Response fromServer = (Response) objectInputStream.readObject();
+			if(fromServer.getType() == ResponseType.ALL_BETS) {
+				placeBet();
+			}
 			if(fromServer.getType() == ResponseType.PLAYER_TURN) {
 				
 				System.out.println("1. hit");
@@ -60,6 +63,8 @@ public class Player {
 						break;
 						
 					}
+				}else if(fromServer.getType() == ResponseType.PLAYER_TURN_END) {
+					
 				}
 			}
 		}
@@ -68,7 +73,7 @@ public class Player {
 	
 	public void placeBet() throws IOException {
 		Scanner placeBetScanner = new Scanner(System.in);
-		System.out.println("How much do you want to bet?");
+		System.out.println("\nHow much do you want to bet?");
 		int betAmount = placeBetScanner.nextInt();	
 		client.sendBetRequest(playerID, betAmount);
 	}
