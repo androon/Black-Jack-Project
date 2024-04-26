@@ -1,3 +1,8 @@
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.LayoutManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,6 +11,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 
 public class Client {
 	private GUIManager gui;
@@ -13,7 +25,8 @@ public class Client {
 	OutputStream outputStream;
 	ObjectOutputStream objectOutputStream;
 	ObjectInputStream objectInputStream;
-	
+	private String address;
+	Client client;
 	public static void main(String[]  args) throws  IOException, ClassNotFoundException 
 	{
 		Client client = new Client();
@@ -21,18 +34,61 @@ public class Client {
 	}
 	
 	public void setupClient() throws ClassNotFoundException, UnknownHostException, IOException{
-
-				Scanner myScanner = new Scanner(System.in);
-				System.out.println("Enter Server Address");
+				JFrame frame = new JFrame("GUI");
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
-				String address = myScanner.nextLine();
-				clientSocket = new Socket(address, 777);
+				JPanel panel = new JPanel();
+				LayoutManager layout = new FlowLayout();
+				panel.setLayout(layout);
+				
+				JLabel label = new JLabel("Enter server address");
+				JTextField textField = new JTextField(20);
+				
+				JButton submitButton = new JButton("Submit");
+		        // Add the ActionListener to the button
+		        submitButton.addActionListener(new ActionListener() {
+		            @Override
+		            public void actionPerformed(ActionEvent e) {
+		                address = textField.getText();
+		                System.out.println(address);
+		                try {
+		                	clientSocket = new Socket(address, 777);
+		    				objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+		    				objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+		    				gui = new GUIManager(Client.this, address, clientSocket, objectOutputStream, objectInputStream);
+		    				
+		    				
+		    				frame.dispose();
+		    				gui.getLogin();
+		    				
+		    				
+
+		                }catch (IOException ex) {
+		                	
+		                } catch (ClassNotFoundException e1) {
+							e1.printStackTrace();
+						}
+		            }
+		        });
+				
+				panel.add(label);
+				panel.add(textField);
+				panel.add(submitButton);
+				
+				frame.add(panel);
+				
+				frame.pack();
+				frame.setLocationRelativeTo(null);
+				frame.setVisible(true);
+				
+				
+				/*clientSocket = new Socket(address, 777);
 				objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 				objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
 				gui = new GUIManager(this, address, clientSocket, objectOutputStream, objectInputStream);
 				
 				gui.getLogin();
-
+*/
 				
 	}
 	

@@ -50,16 +50,16 @@ public class GameLogic {
 	
 	public void initialDeal(List<PlayerData> allGamePlayers) {
 		
+		
+		
 		while(count != allGamePlayers.size() * 2) {
-			System.out.println("still looping");
-			System.out.println("count: " + count);
-			System.out.println("Playercheck: " + playerCheck);
 			for(int i = 0; i < allGamePlayers.size();i++) {
 				PlayerData currPlayer = allGamePlayers.get(i);
 				if(currPlayer.getPlayerID() == playerCheck) {
 					Card drawnCard = deck.drawCard();
 					currPlayer.addCardToHand(drawnCard);
 					int cardVal = drawnCard.getValue();
+					
 					if(cardVal == 1) {
 						currPlayer.setHandWithAce(currPlayer.getHandValue() + 11);
 						
