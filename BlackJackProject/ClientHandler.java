@@ -78,17 +78,23 @@ public class ClientHandler implements Runnable{
 							}
 						}
 						
+						//Debug statements
+						System.out.println("Dealers hand val: " + dealerData.getHandValue());
+						
 						//assign handVal to dealers current hand to determine action
 						handVal = dealerData.getHandValue();
 						
 						response = new Response();
-						if(handVal < 17) {
+						if(dealerData.getHandValue() < 17) {
 							response.setType(ResponseType.REQUEST_DEALER_HIT);
-						}else if(handVal >= 17 && handVal <= 21) {
+							objectOutputStream.writeObject(response);
+						}else if(dealerData.getHandValue() >= 17 && dealerData.getHandValue() <= 21) {
 							response.setType(ResponseType.REQUEST_END_ROUND);
-						}else if(handVal > 21) {
+							objectOutputStream.writeObject(response);
+						}else if(dealerData.getHandValue() > 21) {
 							dealerAutoLose();
 							response.setType(ResponseType.REQUEST_END_ROUND);
+							objectOutputStream.writeObject(response);
 						}
 						objectOutputStream.writeObject(response);
 					}
@@ -137,6 +143,8 @@ public class ClientHandler implements Runnable{
 					
 					System.out.println("player wants to hit");
 				}else if(fromClient.getType() == MessageType.STAND) {
+					
+					System.out.println("player wants to stand");
 					for(int i = 0; i < gamePlayers.getNumPlayers(); i++) {
 						PlayerData gamePlayer = allGamePlayers.get(i);
 						if(fromClient.getPlayerID() == gamePlayer.getPlayerID()) {
@@ -150,7 +158,9 @@ public class ClientHandler implements Runnable{
 							break;
 						}
 					}
-					System.out.println("player wants to stand");
+					response = new Response();
+					response.setType(ResponseType.PLAYER_TURN_END);
+					objectOutputStream.writeObject(response);
 				}else if(fromClient.getType() == MessageType.DOUBLE_DOWN) {
 					System.out.println("Player wants to double down");
 				}else if(fromClient.getType() == MessageType.START_ROUND) {
@@ -171,14 +181,30 @@ public class ClientHandler implements Runnable{
 						for(int i = 0; i < allGamePlayers.size(); i++) {
 							PlayerData dealerCheck = allGamePlayers.get(i);
 							if(dealerCheck.getPlayerID() == 0) {
-								if(dealerCheck.getHandValue() < 17) {
-									response = new Response();
-									response.setType(ResponseType.REQUEST_DEALER_HIT);
-									objectOutputStream.writeObject(response);
-								}else if(dealerCheck.getHandValue() >= 17 && dealerCheck.getHandValue() <= 21) {
-									response = new Response();
-									response.setType(ResponseType.REQUEST_END_ROUND);
-									objectOutputStream.writeObject(response);
+								
+								//Check if dealer has a hand with ace
+								if(dealerCheck.getHandWithAce() != 0) {
+									if(dealerCheck.getHandWithAce() >= 17 && dealerCheck.getHandWithAce() <= 21) {
+										dealerCheck.setHandValue(dealerCheck.getHandWithAce());
+										response = new Response();
+										response.setType(ResponseType.REQUEST_END_ROUND);
+										objectOutputStream.writeObject(response);
+									}else if(dealerCheck.getHandWithAce() < 17) {
+										response = new Response();
+										response.setType(ResponseType.REQUEST_DEALER_HIT);
+										objectOutputStream.writeObject(response);
+									}
+								}else {
+									//If no ace check dealers regular hand
+									if(dealerCheck.getHandValue() < 17) {
+										response = new Response();
+										response.setType(ResponseType.REQUEST_DEALER_HIT);
+										objectOutputStream.writeObject(response);
+									}else if(dealerCheck.getHandValue() >= 17 && dealerCheck.getHandValue() <= 21) {
+										response = new Response();
+										response.setType(ResponseType.REQUEST_END_ROUND);
+										objectOutputStream.writeObject(response);
+									}
 								}
 							}
 						}
