@@ -15,7 +15,12 @@ public class PlayerData implements Serializable{
     private boolean isDealer;
     private int numHand = 0; // Start with 0 cards in hand
     List<Card> hand = new LinkedList<>();
-
+    private String handString;
+    
+    public PlayerData() {
+    }
+    
+    
     public PlayerData(String userName, int playerID, int bankRoll, boolean isDealer)
     {
         this.userName = userName;
@@ -67,10 +72,18 @@ public class PlayerData implements Serializable{
     public int getBankRoll() {
     	return bankRoll;
     }
+    
+    public void setPlayerID(int id) {
+    	this.playerID = id;
+    }
 
     public void setHandValue(int value)
     {
         handValue=value;
+    }
+    
+    public String getHandString() {
+    	return handString;
     }
 
     public void setBetAmount(int amount)
@@ -112,6 +125,10 @@ public class PlayerData implements Serializable{
     	return returnString;
     }
     
+    public void setHandString(String string) {
+    	this.handString = string;
+    }
+    
     public void setHandWithAce(int value) {
     	handWithAce = value;
     }
@@ -123,6 +140,7 @@ public class PlayerData implements Serializable{
     public boolean getIsDealer() {
     	return isDealer;
     }
+    
     
     
     
