@@ -36,6 +36,11 @@ public class Player {
     private JButton standButton;
     private JButton doubleDownButton;
     private JPanel playersPanel;
+    private JPanel dealerPanel;
+    private JLabel dealerLabel;
+    
+    private List<PlayerData> allGamePlayers = new LinkedList<>();
+    
 	public Player(String username, int playerID, int bankRoll, int numWin, int numLoss, Client client, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
 		this.username = username;
 		this.playerID = playerID;
@@ -51,7 +56,7 @@ public class Player {
 	private void displayGUI() throws IOException, ClassNotFoundException {
 			frame = new JFrame("BlackJack");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setSize(800,800);
+			frame.setSize(800,600);
 			
 			gameInfoArea = new JTextArea();
 			gameInfoArea.setEditable(false);
@@ -67,6 +72,10 @@ public class Player {
 			buttons.add(hitButton);
 			buttons.add(standButton);
 			buttons.add(doubleDownButton);
+			
+			dealerPanel = new JPanel(new FlowLayout());
+			dealerLabel = new JLabel("Dealer");
+			dealerPanel.add(dealerLabel);
 			
 			hitButton.addActionListener(new ActionListener() {
 				@Override
@@ -112,7 +121,7 @@ public class Player {
 			//frame.add(buttons, BorderLayout.SOUTH);
 			
 			playersPanel = new JPanel(new GridLayout(1,3));
-			for(int i = 0; i <= 10; i++) {
+			for(int i = 1; i <= 10; i++) {
 				JPanel playerSection = new JPanel(new FlowLayout());
 				JLabel playerLabel = new JLabel("Player " + i);
 				playerSection.add(playerLabel);
@@ -121,11 +130,14 @@ public class Player {
 			
 			JPanel southPanel = new JPanel(new BorderLayout());
 			
-			southPanel.setPreferredSize(new Dimension(800, 250));
+			dealerPanel.setPreferredSize(new Dimension(800,250));
+			
+			southPanel.setPreferredSize(new Dimension(800,250));
 			
 			southPanel.add(playersPanel, BorderLayout.NORTH);
 			southPanel.add(buttons, BorderLayout.SOUTH);
 			
+			frame.add(dealerPanel, BorderLayout.NORTH);
 			frame.add(southPanel, BorderLayout.SOUTH);
 			enableButtons(false);
 			
@@ -156,11 +168,6 @@ public class Player {
 	}
 	
 	public void processServerResponse(Response fromServer) throws InterruptedException {
-	    if (fromServer == null) {
-	        System.out.println("Error: Received null response");
-	        return; // Avoid processing if the response is null
-	    }
-
 	    // Process different response types
 	    switch (fromServer.getType()) {
 	        case ALL_BETS:
@@ -183,15 +190,7 @@ public class Player {
 	}
 
 	public void updateGUI(Response fromServer) throws InterruptedException {
-		
-		/*System.out.println("PLAYERS HAND: " + fromServer.getHandValue());
-		System.out.println("DEALER HAND: " + fromServer.getDealerHandValue());
-		*/
-		
-		if (fromServer == null) {
-	        System.out.println("Error: Received null response in updateGUI");
-	        return; // Avoid NullPointerException
-	    }
+	
 
 	    System.out.println("Processing server response");
 	    
@@ -199,7 +198,73 @@ public class Player {
 	    System.out.println("Player ID: " + fromServer.getPlayerID());
 	    System.out.println("Players Hand Value: " + fromServer.getHandValue());
 	    System.out.println("Players individual cards: " + fromServer.getHandString());
-		
+	    PlayerData data = new PlayerData();
+	    playersPanel.removeAll(); 
+	    
+	    
+	    //If first player to add add player
+	    if(allGamePlayers.size() == 0) {
+	    	data.setPlayerID(fromServer.getPlayerID());
+		    data.setHandValue(fromServer.getHandValue());
+		    data.setHandString(fromServer.getHandString());
+		    allGamePlayers.add(data);
+	    }else { //If not - check if player already exists else add the player to the game
+	    	for(int i = 0; i < allGamePlayers.size(); i++) {
+	    		PlayerData checkPlayers = allGamePlayers.get(i);
+	    		if(checkPlayers.getPlayerID() == fromServer.getPlayerID()) {
+	    			checkPlayers.setHandValue(fromServer.getHandValue());
+	    			checkPlayers.setHandString(fromServer.getHandString());
+	    			break;
+	    		}else if (i == allGamePlayers.size() - 1) {
+	    			data.setPlayerID(fromServer.getPlayerID());
+	    			data.setHandValue(fromServer.getHandValue());
+	    			data.setHandString(fromServer.getHandString());
+	    			allGamePlayers.add(data);
+	    		}
+	    	}
+	    }
+	    
+	    
+	    playersPanel.removeAll(); // Clear existing content
+	    dealerPanel.removeAll();
+	    JPanel dealerPanel = new JPanel(new FlowLayout());
+	    for (int i = 0; i < allGamePlayers.size(); i++) {
+	        PlayerData player = allGamePlayers.get(i);
+	        if(player.getPlayerID() == 0) {
+	        	JTextArea dealerInfoArea = new JTextArea();
+	        	dealerInfoArea.setEditable(false);
+	        	
+	        	String dealerInfo = "Dealer\n" +
+	        						"Hand Value: " + player.getHandValue() + "\n"+
+	        						"Cards: " + player.getHandString();
+	        	dealerInfoArea.setText(dealerInfo);
+	        	dealerPanel.add(dealerInfoArea);
+	        }else {
+		        JPanel playerSection = new JPanel(new FlowLayout());
+	
+		        JTextArea playerInfoArea = new JTextArea();
+		        playerInfoArea.setEditable(false); 
+		        
+		        String playerInfo = "Player ID: " + player.getPlayerID() + "\n" +
+		                            "Hand Value: " + player.getHandValue() + "\n" +
+		                            "Cards: " + player.getHandString();
+	
+		        playerInfoArea.setText(playerInfo);
+		        playerSection.add(playerInfoArea);
+		        playersPanel.add(playerSection); 
+	        }
+	    }
+
+	    
+	    dealerPanel.setPreferredSize(new Dimension(800, 250));
+	    playersPanel.revalidate();
+	    playersPanel.repaint();
+	    dealerPanel.revalidate();
+	    dealerPanel.repaint();
+	    
+
+	    frame.getContentPane().remove(dealerPanel); 
+	    frame.getContentPane().add(dealerPanel, BorderLayout.NORTH); 
 	    
 	}
 	
@@ -238,7 +303,7 @@ public class Player {
 		betFrame.add(betPanel);
 		
 		
-		//Centering the bet window
+		//Centering the bet window to main window
 		int mainX = frame.getX();
 		int mainY = frame.getY();
 		int mainWidth = frame.getWidth();

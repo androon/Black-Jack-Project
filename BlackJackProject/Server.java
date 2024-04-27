@@ -235,5 +235,12 @@ public class Server {
 			clientHandler.sendGameStateToClient(allGamePlayers, numPlayers);
 		}
 	}
+	
+	public void setAllClientsInitialDraw() {
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+			clientHandler.setInitialDraw(false);
+		}
+	}
 }
 

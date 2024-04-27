@@ -24,6 +24,7 @@ public class ClientHandler implements Runnable{
 	private boolean betPlaced = false;
 	private boolean turnEnd = false;
 	private boolean isDealer = false;
+	private boolean initialDraw = true;
 	
 	private int handVal = 0;
 	
@@ -59,6 +60,7 @@ public class ClientHandler implements Runnable{
 					PlayerData dealerData = null;
 					gameLogic.addCardToPlayer(fromClient, allGamePlayers);
 					System.out.println("Hand after hit: " + handVal);
+					server.sendGameState();
 					
 					//Logic for dealer after hit
 					if(isDealer == true) {
@@ -140,7 +142,6 @@ public class ClientHandler implements Runnable{
 						}
 					}
 					
-					
 					System.out.println("player wants to hit");
 				}else if(fromClient.getType() == MessageType.STAND) {
 					
@@ -183,6 +184,7 @@ public class ClientHandler implements Runnable{
 						allPlayersDone = server.checkAllPlayersDone();
 					}
 					if(allPlayersDone) {
+						server.setAllClientsInitialDraw();
 						debug(allGamePlayers);
 						for(int i = 0; i < allGamePlayers.size(); i++) {
 							PlayerData dealerCheck = allGamePlayers.get(i);
@@ -389,6 +391,7 @@ public class ClientHandler implements Runnable{
 			betPlaced = false;
 			turnEnd = false;
 			handVal = 0;
+			initialDraw = true;
 		}
 	}
 	
@@ -400,26 +403,7 @@ public class ClientHandler implements Runnable{
 
 	    boolean allPlayersUpdated = false;
 	    int count = 0;
-	    /*
-	    PlayerData player = allGamePlayers.get(1);
-	    PlayerData dealer = allGamePlayers.get(0);
 	    
-	    response.setPlayerID(dealer.getPlayerID());
-	    response.setHandValue(dealer.getHandValue());
-	    response.setCardHandString(dealer.toStringCards());
-	    
-	    objectOutputStream.writeObject(response);
-	    objectOutputStream.flush();
-	    
-	    response = new Response();
-	    response.setType(ResponseType.UPDATE);
-	    response.setPlayerID(player.getPlayerID());
-	    response.setHandValue(player.getHandValue());
-	    response.setCardHandString(player.toStringCards());
-	    
-	    objectOutputStream.writeObject(response);
-	    objectOutputStream.flush();
-	    */
 	    
 	    while(!allPlayersUpdated) {
 	    	for(int i = 0; i < allGamePlayers.size();i++) {
@@ -427,9 +411,22 @@ public class ClientHandler implements Runnable{
 	    		if(playerData.getPlayerID() == count) {
 	    			response = new Response();
 	    			response.setType(ResponseType.UPDATE);
-	    			response.setPlayerID(playerData.getPlayerID());
-	    			response.setHandValue(playerData.getHandValue());
-	    			response.setCardHandString(playerData.toStringCards());
+	    			if(initialDraw == true && playerData.getPlayerID() == 0) {
+	    				response.setPlayerID(0);
+	    				
+	    				//isolating one card to reveal
+	    				List<Card> hand = playerData.getCardsInHand();
+	    				Card revealedCard = hand.get(1);
+	    				response.setHandValue(revealedCard.getValue());
+	    				
+	    				String cardReveal = String.valueOf(revealedCard.getValue());
+	    				
+	    				response.setCardHandString(cardReveal + ", Hidden");
+	    			}else {
+		    			response.setPlayerID(playerData.getPlayerID());
+		    			response.setHandValue(playerData.getHandValue());
+		    			response.setCardHandString(playerData.toStringCards());
+	    			}
 	    			objectOutputStream.writeObject(response);
 	    			objectOutputStream.flush();
 	    			count++;
@@ -440,30 +437,11 @@ public class ClientHandler implements Runnable{
 	    		allPlayersUpdated = true;
 	    	}
 	    }
-
-	        /*
-	    for (int i = 0; i < allGamePlayers.size(); i++) {
-	         PlayerData currPlayer = allGamePlayers.get(i);
-	            
-	          if (currPlayer.getPlayerID() == count) {
-	                System.out.println("SENDING PLAYER: " + currPlayer.getPlayerID());
-	                
-	                response.setPlayerID(count);
-	                response.setHandValue(currPlayer.getHandValue());
-	                
-	                System.out.println("RESPONSES HAND: " + response.getHandValue());
-	                response.setCardHandString(currPlayer.toStringCards());
-	                
-	                // Send the response
-	                objectOutputStream.writeObject(response);
-	                objectOutputStream.flush(); // Ensure the data is sent
-	                
-	                response.reset(); // Properly reset the response
-	                count++;
-	            }
-	        }
-	      */
 	    
+	}
+	
+	public void setInitialDraw(boolean initialDraw) {
+		this.initialDraw = initialDraw;
 	}
 }
 		
