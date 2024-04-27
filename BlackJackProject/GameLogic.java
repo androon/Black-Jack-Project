@@ -48,10 +48,10 @@ public class GameLogic {
 		return newHandVal;
 	}
 	
-	public void initialDeal(List<PlayerData> allGamePlayers) {
+	public void initialDeal(List<PlayerData> allGamePlayers){
+
 		
-		
-		
+		try{
 		while(count != allGamePlayers.size() * 2) {
 			for(int i = 0; i < allGamePlayers.size();i++) {
 				PlayerData currPlayer = allGamePlayers.get(i);
@@ -79,6 +79,9 @@ public class GameLogic {
 			if(playerCheck == allGamePlayers.size()) {
 				playerCheck = 0;
 			}
+		}
+		}catch(Exception e){
+			
 		}
 	}
 	

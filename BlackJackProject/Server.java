@@ -25,8 +25,9 @@ public class Server {
 	
 	public static void main(String[]  args) throws IOException, ClassNotFoundException {
 		loadData = new LoadUserData();
+		gamePlayers = GamePlayers.getInstance();
+		
 		gameManager = new GameManager();
-		gamePlayers = new GamePlayers();
 		Server server = new Server(777);
 		server.start();
 	}
@@ -209,6 +210,7 @@ public class Server {
 			PlayerData currPlayer = allGamePlayers.get(i);
 			if(currPlayer.getPlayerID() == 0) {
 				currPlayer.setHandValue(0);
+				currPlayer.setHandWithAce(0);
 			}else {
 				currPlayer.reset();
 			}
@@ -221,6 +223,16 @@ public class Server {
 			if(clientHandler.getClientHandlerID() == 0) {
 				clientHandler.requestStartRound();
 			}
+		}
+	}
+	
+	public void sendGameState() throws IOException {
+		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
+		int numPlayers =  gamePlayers.getNumPlayers();
+		
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+			clientHandler.sendGameStateToClient(allGamePlayers, numPlayers);
 		}
 	}
 }

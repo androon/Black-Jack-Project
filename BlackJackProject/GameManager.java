@@ -1,10 +1,12 @@
+import java.util.List;
 
 public class GameManager {
 	private int playerID;
 	private static int count = 0;
 	private Deck deck;
 	private GameLogic gameLogic;
-	public GameManager() {
+	
+	protected GameManager() {
 		gameLogic = new GameLogic();
 		resetDeck();
 	}
@@ -28,4 +30,5 @@ public class GameManager {
 		deck.shuffle();
 		gameLogic.setDeck(deck);
 	}
+	
 }

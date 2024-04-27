@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-class Card {
+class Card implements Serializable{
     private int value;
 
     public Card(int value) {
