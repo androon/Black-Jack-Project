@@ -1,9 +1,13 @@
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JButton;
@@ -14,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 public class Player {
 	private String username;
@@ -30,7 +35,7 @@ public class Player {
     private JButton hitButton;
     private JButton standButton;
     private JButton doubleDownButton;
-	
+    private JPanel playersPanel;
 	public Player(String username, int playerID, int bankRoll, int numWin, int numLoss, Client client, ObjectInputStream objectInputStream) throws IOException, ClassNotFoundException {
 		this.username = username;
 		this.playerID = playerID;
@@ -44,45 +49,6 @@ public class Player {
 	}
 	
 	private void displayGUI() throws IOException, ClassNotFoundException {
-		//If message recieved = player turn - enable buttons
-		
-		/*Scanner myScanner = new Scanner(System.in);
-		while(true) {
-			
-			
-			Response fromServer = (Response) objectInputStream.readObject();
-			if(fromServer.getType() == ResponseType.ALL_BETS) {
-				placeBet();
-			}
-			if(fromServer.getType() == ResponseType.PLAYER_TURN) {
-				
-				System.out.println("1. hit");
-				System.out.println("2. stand");
-				System.out.println("3. double down");
-				int choice = myScanner.nextInt();
-				switch(choice) {
-					case 1:
-						hit();
-						break;
-						
-					case 2:
-						stand();
-						break;
-							
-					case 3: 
-						doubleDown();
-						break;
-						
-					case 9:
-						debug();
-						break;
-						
-					}
-				}else if(fromServer.getType() == ResponseType.PLAYER_TURN_END) {
-					
-				}
-			}
-			*/
 			frame = new JFrame("BlackJack");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setSize(800,800);
@@ -139,40 +105,31 @@ public class Player {
 					}
 				}
 			});
-			
-			/*hitButton.addActionListener(e -> {
-	            try {
-	                hit();
-	            } catch (IOException ex) {
-	                ex.printStackTrace();
-	            }
-	        });
-
-	        standButton.addActionListener(e -> {
-	            try {
-	                stand();
-	            } catch (IOException ex) {
-	                ex.printStackTrace();
-	            }
-	        });
-
-	        doubleDownButton.addActionListener(e -> {
-	            try {
-	                doubleDown();
-	            } catch (IOException ex) {
-	                ex.printStackTrace();
-	            }
-	        });*/
-	    
+		
 			
 			frame.setLayout(new BorderLayout());
 			frame.add(scrollPane,BorderLayout.CENTER);
-			frame.add(buttons, BorderLayout.SOUTH);
+			//frame.add(buttons, BorderLayout.SOUTH);
+			
+			playersPanel = new JPanel(new GridLayout(1,3));
+			for(int i = 0; i <= 10; i++) {
+				JPanel playerSection = new JPanel(new FlowLayout());
+				JLabel playerLabel = new JLabel("Player " + i);
+				playerSection.add(playerLabel);
+				playersPanel.add(playerSection);
+			}
+			
+			JPanel southPanel = new JPanel(new BorderLayout());
+			
+			southPanel.setPreferredSize(new Dimension(800, 250));
+			
+			southPanel.add(playersPanel, BorderLayout.NORTH);
+			southPanel.add(buttons, BorderLayout.SOUTH);
+			
+			frame.add(southPanel, BorderLayout.SOUTH);
 			enableButtons(false);
 			
 			frame.setVisible(true);
-			
-			//waitForServer();
 			
 		}
 			
@@ -198,17 +155,53 @@ public class Player {
 		doubleDownButton.setEnabled(enabled);
 	}
 	
-	public void processServerResponse(Response fromServer) {
-		if(fromServer.getType() == ResponseType.ALL_BETS) {
-			System.out.println("Requesting for bet");
-			betGUI();
-		}else if(fromServer.getType() == ResponseType.PLAYER_TURN) {
-			enableButtons(true);
-		}else if(fromServer.getType() == ResponseType.PLAYER_TURN_END) {
-			enableButtons(false);
-		}
+	public void processServerResponse(Response fromServer) throws InterruptedException {
+	    if (fromServer == null) {
+	        System.out.println("Error: Received null response");
+	        return; // Avoid processing if the response is null
+	    }
+
+	    // Process different response types
+	    switch (fromServer.getType()) {
+	        case ALL_BETS:
+	            System.out.println("Requesting for bet");
+	            betGUI(); // Handle bet GUI
+	            break;
+	        case PLAYER_TURN:
+	            enableButtons(true); // Enable player buttons
+	            break;
+	        case PLAYER_TURN_END:
+	            enableButtons(false); // Disable player buttons
+	            break;
+	        case UPDATE:
+	            updateGUI(fromServer); // Update GUI with new data
+	            break;
+	        default:
+	            System.out.println("Unknown response type: " + fromServer.getType());
+	            break;
+	    }
 	}
 
+	public void updateGUI(Response fromServer) throws InterruptedException {
+		
+		/*System.out.println("PLAYERS HAND: " + fromServer.getHandValue());
+		System.out.println("DEALER HAND: " + fromServer.getDealerHandValue());
+		*/
+		
+		if (fromServer == null) {
+	        System.out.println("Error: Received null response in updateGUI");
+	        return; // Avoid NullPointerException
+	    }
+
+	    System.out.println("Processing server response");
+	    
+	    // Check the data in the response
+	    System.out.println("Player ID: " + fromServer.getPlayerID());
+	    System.out.println("Players Hand Value: " + fromServer.getHandValue());
+	    System.out.println("Players individual cards: " + fromServer.getHandString());
+		
+	    
+	}
 	
 	
 	public void betGUI() {

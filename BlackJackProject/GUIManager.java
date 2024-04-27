@@ -26,6 +26,7 @@ public class GUIManager {
 	private boolean loginSuccess;
 	ObjectOutputStream objectOutputStream;
 	ObjectInputStream objectInputStream;
+
 	private JTextField usernameField;
 	private JTextField passwordField;
 	
@@ -35,6 +36,7 @@ public class GUIManager {
 		this.clientSocket = clientSocket;
 		this.objectOutputStream = objectOutputStream;
 		this.objectInputStream = objectInputStream;
+
 	}
 	
 	public void getLogin() throws UnknownHostException, IOException, ClassNotFoundException {

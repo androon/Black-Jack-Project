@@ -27,6 +27,7 @@ public class Client {
 	ObjectInputStream objectInputStream;
 	private String address;
 	Client client;
+	
 	public static void main(String[]  args) throws  IOException, ClassNotFoundException 
 	{
 		Client client = new Client();
@@ -34,6 +35,7 @@ public class Client {
 	}
 	
 	public void setupClient() throws ClassNotFoundException, UnknownHostException, IOException{
+				
 				JFrame frame = new JFrame("GUI");
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
