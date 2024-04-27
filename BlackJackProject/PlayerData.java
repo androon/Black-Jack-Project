@@ -1,8 +1,7 @@
-import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class PlayerData implements Serializable{
+public class PlayerData {
 
     private String userName;
     private int playerID;
@@ -13,7 +12,6 @@ public class PlayerData implements Serializable{
     private int bankRoll;
     private int handWithAce = 0;
     private boolean isDealer;
-    private int numHand = 0; // Start with 0 cards in hand
     List<Card> hand = new LinkedList<>();
 
     public PlayerData(String userName, int playerID, int bankRoll, boolean isDealer)
@@ -91,25 +89,11 @@ public class PlayerData implements Serializable{
     }
     
     public void addCardToHand(Card card) {
-    	numHand++;
     	hand.add(card);
     }
     
     public List<Card> getCardsInHand(){
     	return hand;
-    }
-    
-    public String toStringCards() {
-    	String returnString = "";
-    	for(int i = 0; i < hand.size(); i++) {
-    		Card card = hand.get(i);
-    		returnString += String.valueOf(card.getValue());
-    		if(i < hand.size() -1 ) {
-    			returnString += ", ";
-    		}
-    	}
-    	
-    	return returnString;
     }
     
     public void setHandWithAce(int value) {
@@ -124,11 +108,7 @@ public class PlayerData implements Serializable{
     	return isDealer;
     }
     
-    
-    
     public void resetHand() {
     	hand.clear();
     }
-    
-   
 }

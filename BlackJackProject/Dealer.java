@@ -20,6 +20,7 @@ public class Dealer {
     private boolean isDealer;
     ObjectInputStream objectInputStream;
     private boolean roundStart = false;
+
     private JFrame frame;
     private JTextArea gameInfoArea; // Displays dealer and player hands
     private JButton hitButton;
@@ -33,7 +34,6 @@ public class Dealer {
         this.client=client;
         this.isDealer=isDealer;
         this.objectInputStream = objectInputStream;
-        
         displayDealerGUI();
         listenToServer();
     }
@@ -41,6 +41,34 @@ public class Dealer {
 
 
     private void displayDealerGUI() throws  IOException, ClassNotFoundException{
+
+        /*while(true)
+        {
+        	
+        	Scanner scan=new Scanner(System.in);
+            int choice;
+            Response fromServer = (Response) objectInputStream.readObject();
+        	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
+        		System.out.println("1.Start Round");
+	            choice = scan.nextInt();
+		            if(choice == 1) {
+			           start_Round();
+			        }
+        	}else if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
+	            System.out.println("1.Dealer Hit");
+	            choice = scan.nextInt();
+		            if(choice == 1) {
+			           dealer_hit();
+			        }
+            }else if(fromServer.getType() == ResponseType.REQUEST_END_ROUND) {
+	            System.out.println("1.Finish Round");
+	            choice = scan.nextInt();
+	            if(choice == 1) {
+		           end_Round();
+		        }
+            }
+
+        }*/
     	
     	frame = new JFrame("BlackJack: Dealer");
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,6 +94,7 @@ public class Dealer {
     		public void actionPerformed(ActionEvent e) {
     			try {
     				start_Round();
+    				startButton.setEnabled(false);
     			}catch (IOException e1) {
     				e1.printStackTrace();
     			}
@@ -77,12 +106,10 @@ public class Dealer {
     		public void actionPerformed(ActionEvent e) {
     			try {
     				dealer_hit();
+    				hitButton.setEnabled(false);
     			}catch (IOException e1) {
     				e1.printStackTrace();
-    			} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+    			}
     		}
     	});
     	
@@ -91,6 +118,7 @@ public class Dealer {
     		public void actionPerformed(ActionEvent e) {
     			try {
     				end_Round();
+    				endButton.setEnabled(false);
     			}catch (IOException e1) {
     				e1.printStackTrace();
     			}
@@ -128,12 +156,10 @@ public class Dealer {
 		}).start();
     }
     
-    public void processServerResponse(Response fromServer) throws InterruptedException {
-    	System.out.println(fromServer.getType());
+    public void processServerResponse(Response fromServer) {
     	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
     		startButton.setEnabled(true);
     	}else if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
-    		Thread.sleep(1000);
             hitButton.setEnabled(true);
         }else if(fromServer.getType() == ResponseType.REQUEST_END_ROUND) {
             endButton.setEnabled(true);
@@ -143,17 +169,15 @@ public class Dealer {
     
     public void start_Round()throws IOException{
         client.sendStartRoundRequest();
-		startButton.setEnabled(false);
     	
     }
 
-    public void dealer_hit() throws IOException, InterruptedException{
+    public void dealer_hit() throws IOException{
         client.sendHitRequest(0);
-    	hitButton.setEnabled(false);
+    	
     }
     public void end_Round() throws IOException{
        client.sendEndRoundRequest();
-       endButton.setEnabled(false);
     }
 
 }

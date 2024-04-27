@@ -57,7 +57,7 @@ public class ClientHandler implements Runnable{
 				}else if(fromClient.getType() == MessageType.HIT) {
 					GameLogic gameLogic = gameManager.getGameLogic();
 					PlayerData dealerData = null;
-					gameLogic.addCardToPlayer(fromClient, allGamePlayers);
+					handVal = gameLogic.addCardToPlayer(fromClient, allGamePlayers);
 					System.out.println("Hand after hit: " + handVal);
 					
 					//Logic for dealer after hit
@@ -75,7 +75,6 @@ public class ClientHandler implements Runnable{
 						if(dealerData.getHandWithAce() != 0) {
 							if(dealerData.getHandWithAce() >= 17 && dealerData.getHandWithAce() <= 21) {
 								dealerData.setHandValue(dealerData.getHandWithAce());
-								dealerData.setHandWithAce(0);
 							}
 						}
 						
@@ -93,9 +92,11 @@ public class ClientHandler implements Runnable{
 							response.setType(ResponseType.REQUEST_END_ROUND);
 							objectOutputStream.writeObject(response);
 						}else if(dealerData.getHandValue() > 21) {
+							dealerAutoLose();
 							response.setType(ResponseType.REQUEST_END_ROUND);
 							objectOutputStream.writeObject(response);
 						}
+						objectOutputStream.writeObject(response);
 					}
 					
 					
@@ -112,7 +113,6 @@ public class ClientHandler implements Runnable{
 						
 						//Get handValue after card is added
 						handVal = playerData.getHandValue();
-						System.out.println("Hand after hit" + playerData.getHandValue());
 						//Check if player has an ace
 						if(playerData.getHandWithAce() != 0) {
 							System.out.println("Regular Hand: " + handVal);
@@ -171,13 +171,7 @@ public class ClientHandler implements Runnable{
 					gameLogic.initialDeal(allGamePlayers);
 					server.checkBetPlaced();
 					debug(allGamePlayers);
-					
-					//Sending gamestate to all players
-					server.sendGameState();
-					
 					server.findClient();
-					
-					
 					boolean allPlayersDone = false;
 					while(!allPlayersDone) {
 						allPlayersDone = server.checkAllPlayersDone();
@@ -255,7 +249,6 @@ public class ClientHandler implements Runnable{
 					playerID = 0;
 					//Adding dealer to the game
 					PlayerData dealer = new PlayerData(user.getUsername(), 0, 0, true);
-					
 					gamePlayers.addPlayer(dealer);
 					
 					//writing response to client
@@ -276,7 +269,6 @@ public class ClientHandler implements Runnable{
 					
 					PlayerData player = new PlayerData(user.getUsername(), playerID, user.getBankroll(), false);
 					gamePlayers.addPlayer(player);
-					
 					objectOutputStream.writeObject(response);
 				}
 				match = true;
@@ -390,80 +382,6 @@ public class ClientHandler implements Runnable{
 			turnEnd = false;
 			handVal = 0;
 		}
-	}
-	
-	
-	public void sendGameStateToClient(List<PlayerData> allGamePlayers, int numPlayers) throws IOException {
-	    System.out.println("SENDING GAMESTATE");
-	    response = new Response();
-	    response.setType(ResponseType.UPDATE);
-
-	    boolean allPlayersUpdated = false;
-	    int count = 0;
-	    /*
-	    PlayerData player = allGamePlayers.get(1);
-	    PlayerData dealer = allGamePlayers.get(0);
-	    
-	    response.setPlayerID(dealer.getPlayerID());
-	    response.setHandValue(dealer.getHandValue());
-	    response.setCardHandString(dealer.toStringCards());
-	    
-	    objectOutputStream.writeObject(response);
-	    objectOutputStream.flush();
-	    
-	    response = new Response();
-	    response.setType(ResponseType.UPDATE);
-	    response.setPlayerID(player.getPlayerID());
-	    response.setHandValue(player.getHandValue());
-	    response.setCardHandString(player.toStringCards());
-	    
-	    objectOutputStream.writeObject(response);
-	    objectOutputStream.flush();
-	    */
-	    
-	    while(!allPlayersUpdated) {
-	    	for(int i = 0; i < allGamePlayers.size();i++) {
-	    		PlayerData playerData = allGamePlayers.get(i);
-	    		if(playerData.getPlayerID() == count) {
-	    			response = new Response();
-	    			response.setType(ResponseType.UPDATE);
-	    			response.setPlayerID(playerData.getPlayerID());
-	    			response.setHandValue(playerData.getHandValue());
-	    			response.setCardHandString(playerData.toStringCards());
-	    			objectOutputStream.writeObject(response);
-	    			objectOutputStream.flush();
-	    			count++;
-	    		}
-	    	}
-	    	
-	    	if(count == allGamePlayers.size()) {
-	    		allPlayersUpdated = true;
-	    	}
-	    }
-
-	        /*
-	    for (int i = 0; i < allGamePlayers.size(); i++) {
-	         PlayerData currPlayer = allGamePlayers.get(i);
-	            
-	          if (currPlayer.getPlayerID() == count) {
-	                System.out.println("SENDING PLAYER: " + currPlayer.getPlayerID());
-	                
-	                response.setPlayerID(count);
-	                response.setHandValue(currPlayer.getHandValue());
-	                
-	                System.out.println("RESPONSES HAND: " + response.getHandValue());
-	                response.setCardHandString(currPlayer.toStringCards());
-	                
-	                // Send the response
-	                objectOutputStream.writeObject(response);
-	                objectOutputStream.flush(); // Ensure the data is sent
-	                
-	                response.reset(); // Properly reset the response
-	                count++;
-	            }
-	        }
-	      */
-	    
 	}
 }
 		
