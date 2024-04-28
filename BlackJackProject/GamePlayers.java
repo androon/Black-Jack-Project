@@ -18,16 +18,9 @@ public class GamePlayers {
 		return gamePlayers;
 	}
 	
-	public void addPlayer(PlayerData player) {
-		//debug
-		System.out.println(player.getUserName());
-		System.out.println(player.getPlayerID());
-		//
-		
+	public void addPlayer(PlayerData player) {		
 		gamePlayers.add(player);
 		count++;
-		
-		System.out.println(count);
 	}
 	
 	public int getNumPlayers() {

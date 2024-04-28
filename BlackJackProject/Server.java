@@ -242,5 +242,6 @@ public class Server {
 			clientHandler.setInitialDraw(false);
 		}
 	}
+	
 }
 
