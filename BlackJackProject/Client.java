@@ -47,7 +47,7 @@ public class Client {
 				JTextField textField = new JTextField(20);
 				
 				JButton submitButton = new JButton("Submit");
-		        // Add the ActionListener to the button
+
 		        submitButton.addActionListener(new ActionListener() {
 		            @Override
 		            public void actionPerformed(ActionEvent e) {
@@ -84,14 +84,6 @@ public class Client {
 				frame.setVisible(true);
 				
 				
-				/*clientSocket = new Socket(address, 777);
-				objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-				objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
-				gui = new GUIManager(this, address, clientSocket, objectOutputStream, objectInputStream);
-				
-				gui.getLogin();
-*/
-				
 	}
 	
 	public void sendBetRequest(int playerID, int betAmount) throws IOException {
@@ -116,9 +108,10 @@ public class Client {
 		objectOutputStream.writeObject(standMessage);
 	}
 	
-	public void sendDoubleDownRequest(int playerID) throws IOException{
+	public void sendDoubleDownRequest(int playerID, int betAmount) throws IOException{
 		ClientMessage doubledownMessage = new ClientMessage();
 		doubledownMessage.setPlayerID(playerID);
+		doubledownMessage.setBetAmount(betAmount);
 		doubledownMessage.setMessageType(MessageType.DOUBLE_DOWN);
 		objectOutputStream.writeObject(doubledownMessage);
 	}

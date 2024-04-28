@@ -20,16 +20,13 @@ public class GameLogic {
 				
 				//If card drawn is an ace check if it busts the hand
 				if(cardVal == 1){
+					System.out.println("DREW AN ACE");
 					if(currPlayer.getHandValue() + 11 <= 21) {
 						currPlayer.setHandWithAce(currPlayer.getHandValue() + 11);
 					}else if(currPlayer.getHandValue() + 11 > 21) {
 						currPlayer.setHandWithAce(0);
 					}
-				}
-				
-				//If player already has an ace hand, check if adding cardVal will bust the hand
-				//If it does, set handWithAce to 0
-				if(currPlayer.getHandWithAce() != 0) {
+				}else if(currPlayer.getHandWithAce() != 0 && cardVal != 1) {
 					int checkAceAdd = currPlayer.getHandWithAce() + cardVal;
 					//If it's over 21 get rid of the ace hand
 					if(checkAceAdd > 21) {
@@ -104,16 +101,14 @@ public class GameLogic {
 				PlayerData currPlayer = allGamePlayers.get(i);
 				if(currPlayer.getPlayerID() == playerIDOutcomeCheck) {
 					if(currPlayer.getBust() == true) {
-						//Take money
-						currPlayer.setBankRoll(currPlayer.getBankRoll() - currPlayer.getBetAmount());
-						System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Loss");
+						//Already take bet from player
+						continue;
 					}else if(dealerData.getHandValue() > 21 && currPlayer.getBust() == false){
 						currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
 					}else {
-						//Give money
 						if(dealerData.getHandValue() > currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Loss");
-							currPlayer.setBankRoll(currPlayer.getBankRoll() - currPlayer.getBetAmount());
+							//Already take money from player
+							continue;
 						}else if(dealerData.getHandValue() < currPlayer.getHandValue()) {
 							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Win");
 							currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
@@ -132,6 +127,7 @@ public class GameLogic {
 			System.out.println("Still looping");
 		}
 	}
+	
 	
 	
 	public void setDeck(Deck deck) {
