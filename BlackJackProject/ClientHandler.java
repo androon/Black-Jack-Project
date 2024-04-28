@@ -92,7 +92,10 @@ public class ClientHandler implements Runnable{
 				gameLogic = gameManager.getGameLogic();
 				endRound(gameLogic, allGamePlayers);
 				break;
-			
+				
+			case DEPOSIT:
+				depositFunds(fromClient, allGamePlayers);
+				break;
 			default:
 				System.out.println("UNKNOWNS RESPONSE: " + fromClient.getType());
 				break;
@@ -497,6 +500,21 @@ public class ClientHandler implements Runnable{
 		server.sendGameState();
 		server.resetGame();
 		gameLogic.reset();
+	}
+	
+	public void depositFunds(ClientMessage fromClient, List<PlayerData> allGamePlayers) throws IOException {
+		for(int i = 0; i < allGamePlayers.size(); i++) {
+			PlayerData playerToDeposit = allGamePlayers.get(i);
+			if(playerToDeposit.getPlayerID() == fromClient.getPlayerID()) {
+				playerToDeposit.setBankRoll(playerToDeposit.getBankRoll() + fromClient.getDepAmount());
+				response = new Response();
+				response.setType(ResponseType.UPDATE_BANKROLL);
+				response.setBankRoll(playerToDeposit.getBankRoll());
+				objectOutputStream.writeObject(response);
+				break;
+			}
+		}
+		
 	}
 	
 }

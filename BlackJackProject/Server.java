@@ -60,8 +60,7 @@ public class Server {
 		}
 	}
 	
-	//goes to client handler with playerID 1 - whatever incrementally
-	
+
 	public void findClient() throws IOException {
 		while(currPlayer != clients.size()) {
 			System.out.println(currPlayer);
