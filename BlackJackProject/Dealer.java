@@ -255,7 +255,7 @@ public class Dealer {
 	    		String gameInfoAreaText = "Dealer\n" +
 	    							      "Dealer Hand: " + player.getHandValue();
 	    								if(player.getHandWithAce() != 0) {
-	    									dealerInfo += "Ace Hand: " + player.getHandWithAce();
+	    									gameInfoAreaText += "Ace Hand: " + player.getHandWithAce();
 	    								}
 	    			  
 	    	    gameInfoArea.setText(gameInfoAreaText);

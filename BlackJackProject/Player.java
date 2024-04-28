@@ -39,6 +39,7 @@ public class Player {
     private JButton hitButton;
     private JButton standButton;
     private JButton doubleDownButton;
+    private JButton depositButton;
     private JPanel playersPanel;
     private JPanel dealerPanel;
     private JLabel dealerLabel;
@@ -78,18 +79,44 @@ public class Player {
 			
 			JPanel buttons = new JPanel();
 			buttons.setLayout(new FlowLayout());
-		
 			hitButton = new JButton("Hit");
 			standButton = new JButton("Stand");
 			doubleDownButton = new JButton("Double Down");
-			
+			depositButton = new JButton("Deposit");
 			buttons.add(hitButton);
 			buttons.add(standButton);
 			buttons.add(doubleDownButton);
+			buttons.add(depositButton);
 			
 			dealerPanel = new JPanel(new FlowLayout());
 			dealerLabel = new JLabel("Dealer");
 			dealerPanel.add(dealerLabel);
+			frame.setLayout(new BorderLayout());
+			frame.add(scrollPane,BorderLayout.NORTH);
+			
+			playersPanel = new JPanel(new GridLayout(1,3));
+			for(int i = 1; i <= 10; i++) {
+				JPanel playerSection = new JPanel(new FlowLayout());
+				JLabel playerLabel = new JLabel("Player " + i);
+				playerSection.add(playerLabel);
+				playersPanel.add(playerSection);
+			}
+			
+			JPanel mainPanel = new JPanel();
+			mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
+			mainPanel.add(dealerPanel);
+			mainPanel.add(playersPanel);
+			
+			frame.add(mainPanel, BorderLayout.CENTER);
+			frame.add(buttons, BorderLayout.SOUTH);
+			
+			hitButton.setEnabled(false);
+            standButton.setEnabled(false);
+            doubleDownButton.setEnabled(false);
+			depositButton.setEnabled(true);
+			
+			frame.setVisible(true);
+			
 			
 			hitButton.addActionListener(new ActionListener() {
 				@Override
@@ -126,32 +153,16 @@ public class Player {
 					}
 				}
 			});
+			
+			depositButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					depositGUI();
+				}
+			});
 		
 			
-			frame.setLayout(new BorderLayout());
-			frame.add(scrollPane,BorderLayout.NORTH);
 			
-			playersPanel = new JPanel(new GridLayout(1,3));
-			for(int i = 1; i <= 10; i++) {
-				JPanel playerSection = new JPanel(new FlowLayout());
-				JLabel playerLabel = new JLabel("Player " + i);
-				playerSection.add(playerLabel);
-				playersPanel.add(playerSection);
-			}
-			
-			JPanel mainPanel = new JPanel();
-			mainPanel.setLayout(new BoxLayout(mainPanel,BoxLayout.Y_AXIS));
-			mainPanel.add(dealerPanel);
-			mainPanel.add(playersPanel);
-			
-			frame.add(mainPanel, BorderLayout.CENTER);
-			frame.add(buttons, BorderLayout.SOUTH);
-			
-			hitButton.setEnabled(false);
-            standButton.setEnabled(false);
-            doubleDownButton.setEnabled(false);
-			
-			frame.setVisible(true);
 			
 		}
 			
@@ -181,11 +192,13 @@ public class Player {
 	        case PLAYER_TURN:
 	            hitButton.setEnabled(true);
 	            standButton.setEnabled(true);
+	            depositButton.setEnabled(false);
 	            if(actionNum == 0) {
 	            	doubleDownButton.setEnabled(true);
 	            }else {
 	            	doubleDownButton.setEnabled(false);
 	            }
+	            
 	            actionNum++;
 	            break;
 	        
@@ -193,12 +206,18 @@ public class Player {
 	        	hitButton.setEnabled(false);
 	            standButton.setEnabled(false);
 	            doubleDownButton.setEnabled(false);
+	            depositButton.setEnabled(true);
 	            actionNum = 0;
 	            break;
 	        
 	        case UPDATE:
 	            updateGUI(fromServer); 
 	            break;
+	        
+	        case UPDATE_BANKROLL:
+	        	System.out.println("UPDATING BANKROLL");
+	        	updateBankRoll(fromServer);
+	        	break;
 	        
 	        default:
 	            System.out.println("Unknown response type: " + fromServer.getType());
@@ -316,7 +335,56 @@ public class Player {
 	    
 	    
 	}
-
+	
+	public void depositGUI() {
+		JFrame depositFrame = new JFrame("Deposit amount");
+		depositFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		depositFrame.setSize(300,150);
+		JPanel depositPanel = new JPanel(new FlowLayout());
+		JLabel depositLabel = new JLabel("Enter amount to deposit: ");
+		JTextField depositField = new JTextField(10);
+		JButton submitButton = new JButton("Confirm Deposit");
+		submitButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					int depositAmount = Integer.parseInt(depositField.getText());
+					if(depositAmount > 1000 || bankRoll > 10000) {
+						JOptionPane.showMessageDialog(depositFrame, "Deposit Failed", "Invalid Deposit", JOptionPane.ERROR_MESSAGE);
+						depositGUI();
+					}else {
+						deposit(depositAmount);
+					}
+					depositFrame.dispose();
+				}catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(depositFrame, "Please enter a valid number.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} 
+			}
+		});
+		
+		depositPanel.add(depositLabel);
+		depositPanel.add(depositField);
+		depositPanel.add(submitButton);
+		depositFrame.add(depositPanel);
+		int mainX = frame.getX();
+		int mainY = frame.getY();
+		int mainWidth = frame.getWidth();
+		int mainHeight = frame.getHeight();
+		
+		int betFrameX = mainX + (mainWidth - depositFrame.getWidth()) /2;
+		int betFrameY = mainY + (mainHeight - depositFrame.getHeight()) /2;
+		
+		depositFrame.setLocation(betFrameX,betFrameY);
+		
+		
+		depositFrame.setVisible(true);
+		
+		
+		
+	}
 	
 	public void betGUI() {
 		JFrame betFrame = new JFrame("Place your bet");
@@ -371,6 +439,20 @@ public class Player {
 		
 		betFrame.setVisible(true);
 
+	}
+	
+	public void updateBankRoll(Response fromServer) {
+		bankRoll = fromServer.getBankroll();
+		gameInfoArea.setText("Your ID: " + playerID + "\n" + 
+				 			 "Your BankRoll: " + bankRoll + "\n" +
+				 			 "Your Bet: " + betAmount);
+		
+		gameInfoArea.revalidate();
+		gameInfoArea.repaint();
+	}
+	
+	public void deposit(int depositAmount) throws IOException {
+		client.sendDepositRequest(playerID, depositAmount);
 	}
 	
 	

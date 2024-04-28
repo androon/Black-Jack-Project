@@ -128,6 +128,14 @@ public class Client {
 		objectOutputStream.writeObject(endRoundMessage);
 	}
 	
+	public void sendDepositRequest(int playerID, int depositAmount) throws IOException {
+		ClientMessage depositMessage = new ClientMessage();
+		depositMessage.setMessageType(MessageType.DEPOSIT);
+		depositMessage.setPlayerID(playerID);
+		depositMessage.setDepAmount(depositAmount);
+		objectOutputStream.writeObject(depositMessage);
+	}
+	
 	
 	public void debug() throws IOException{
 		ClientMessage debug = new ClientMessage();
