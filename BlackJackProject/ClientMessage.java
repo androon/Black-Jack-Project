@@ -1,11 +1,5 @@
-package blackjack;
-
 import java.io.Serializable;
-/*
- * Client Message class contains the Accessors and Mutators that identify a Client
- * A Client can be identified with attributes listed below in the default Constructor
- * 
- * */
+
 public class ClientMessage implements Serializable{
 	private String username;
 	private String password;
@@ -16,6 +10,7 @@ public class ClientMessage implements Serializable{
 	private int winAmount;
 	private int lossAmount;
 	private int betAmount;
+	private int bankRoll;
 	private MessageType type;
 	
 	//Default constructor setting default values
@@ -67,6 +62,11 @@ public class ClientMessage implements Serializable{
 	public int getBetAmount() {
 		return this.betAmount;
 	}
+	
+	public int getBankRoll() {
+		return this.bankRoll;
+	}
+	
 	public MessageType getType() {
 		return this.type;
 	}
@@ -107,9 +107,15 @@ public class ClientMessage implements Serializable{
 		this.betAmount = betAmount;
 	}
 	
+	public void setBankroll(int bankRoll) {
+		this.bankRoll = bankRoll;
+	}
+	
 	public void setMessageType(MessageType type) {
 		this.type = type;
 	}
+	
+	
 	
 	
 }

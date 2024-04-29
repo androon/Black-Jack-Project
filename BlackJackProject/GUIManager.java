@@ -1,5 +1,3 @@
-package blackjack;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -20,13 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-/*
- * Class is called to authenticate user credentials by comparing client username and password to the text file
- * After a successful login, either a player class object is instantiated or a dealer class object is instantiated based on the text file settings
- * The server either sends a message of successful login or failed login 
- * */
-
-
+//Purpose: Request login and determine GUI
 public class GUIManager {
 	Client client;
 	String address;
