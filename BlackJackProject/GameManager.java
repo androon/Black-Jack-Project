@@ -1,5 +1,3 @@
-import java.util.List;
-
 public class GameManager {
 	private int playerID;
 	private static int count = 0;

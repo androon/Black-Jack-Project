@@ -1,4 +1,5 @@
 import java.awt.GridBagConstraints;
+
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -6,24 +7,20 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 //Purpose: Request login and determine GUI
 public class GUIManager {
 	Client client;
 	String address;
 	Socket clientSocket;
-	private boolean loginSuccess;
 	ObjectOutputStream objectOutputStream;
 	ObjectInputStream objectInputStream;
 
@@ -40,7 +37,6 @@ public class GUIManager {
 	}
 	
 	public void getLogin() throws UnknownHostException, IOException, ClassNotFoundException {
-			Scanner myScanner = new Scanner(System.in);
 			loginGUI();
 	}
 	
@@ -111,25 +107,18 @@ public class GUIManager {
 			
 			if(serverResponse.getType() == ResponseType.LOGIN_SUCCESS && serverResponse.getIsDealer() == false) {
 				frame.dispose();
-				
-				System.out.println(serverResponse.getUsername());
-				System.out.println(serverResponse.getPlayerID());
-				System.out.println(serverResponse.getBankroll());
-				System.out.println(serverResponse.getWinAmount());
+
 				username = serverResponse.getUsername();
 				int playerID = serverResponse.getPlayerID();
 				int bankRoll = serverResponse.getBankroll();
 				int winAmount = serverResponse.getWinAmount();
 				int lossAmount = serverResponse.getLossAmount();
 				//Use to break out of loop
-				this.loginSuccess = true;
 				
 				Player player = new Player(username, playerID, bankRoll, winAmount, lossAmount, client, objectInputStream);
 				
 			}else if(serverResponse.getType() == ResponseType.LOGIN_SUCCESS && serverResponse.getIsDealer() == true) {
-				System.out.println(serverResponse.getIsDealer());
 				frame.dispose();
-				this.loginSuccess = true;
 				
 				Dealer dealer = new Dealer(client, serverResponse.getPlayerID(), serverResponse.getIsDealer(), objectInputStream);
 				

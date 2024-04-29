@@ -1,5 +1,5 @@
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,12 +9,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -36,7 +34,7 @@ public class Client {
 	
 	public void setupClient() throws ClassNotFoundException, UnknownHostException, IOException{
 				
-				JFrame frame = new JFrame("GUI");
+				JFrame frame = new JFrame("Connect to Server");
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				
 				JPanel panel = new JPanel();
@@ -52,7 +50,6 @@ public class Client {
 		            @Override
 		            public void actionPerformed(ActionEvent e) {
 		                address = textField.getText();
-		                System.out.println(address);
 		                try {
 		                	clientSocket = new Socket(address, 777);
 		    				objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -146,14 +143,6 @@ public class Client {
 		logoutMessage.setLossAmount(numLoss);
 		objectOutputStream.writeObject(logoutMessage);
 	}
-	
-	
-	public void debug() throws IOException{
-		ClientMessage debug = new ClientMessage();
-		debug.setMessageType(MessageType.DEBUG);
-		objectOutputStream.writeObject(debug);
-	}
-	
 	
 }
 

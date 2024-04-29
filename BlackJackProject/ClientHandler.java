@@ -29,8 +29,6 @@ public class ClientHandler implements Runnable{
 	private boolean isDealer = false;
 	private boolean initialDraw = true;
 	
-	private int handVal = 0;
-	
 	public ClientHandler(Socket socket, LoadUserData userDataFile, GameManager gameManager, GamePlayers gamePlayers, Server server){
 			clientSocket=socket;
 			this.userDataFile = userDataFile;
@@ -49,8 +47,6 @@ public class ClientHandler implements Runnable{
 			
 			while(listenToClient) {
 				ClientMessage fromClient = (ClientMessage) objectInputStream.readObject();
-				System.out.println(fromClient.getType());
-				List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
 				processClientMessage(fromClient);
 				}
 		}catch(EOFException e){
@@ -91,7 +87,6 @@ public class ClientHandler implements Runnable{
 			
 			case DOUBLE_DOWN:
 				gameLogic = gameManager.getGameLogic();
-				System.out.println("STILL IMPLEMENTING");
 				checkHit(gameLogic, allGamePlayers, fromClient);
 				setStand(fromClient,allGamePlayers);
 				addPlayerBet(fromClient,allGamePlayers);
@@ -190,11 +185,6 @@ public class ClientHandler implements Runnable{
 	public void addPlayerBet(ClientMessage fromClient, List<PlayerData> allGamePlayers) {
 		for(int i = 0; i < allGamePlayers.size(); i++) {
 			PlayerData gamePlayer = allGamePlayers.get(i);
-			System.out.println(gamePlayer.getUserName());
-			System.out.println(gamePlayer.getPlayerID());
-		}
-		for(int i = 0; i < allGamePlayers.size(); i++) {
-			PlayerData gamePlayer = allGamePlayers.get(i);
 			if(fromClient.getPlayerID() == gamePlayer.getPlayerID()) {
 				gamePlayer.setBankRoll(gamePlayer.getBankRoll() - fromClient.getBetAmount());
 				gamePlayer.setBetAmount(fromClient.getBetAmount() + gamePlayer.getBetAmount());
@@ -202,7 +192,6 @@ public class ClientHandler implements Runnable{
 				break;
 			}
 		}
-		System.out.println("Player wants to make a bet");
 	}
 		
 	public int getClientHandlerID() {
@@ -245,45 +234,11 @@ public class ClientHandler implements Runnable{
 		return turnEnd;
 	}
 	
-	public void debug(List<PlayerData> allGamePlayers) {
-		for(int i = 0; i < allGamePlayers.size(); i++) {
-			System.out.println("DEBUG SETTING");
-			PlayerData gamePlayer = allGamePlayers.get(i);
-			List<Card> hand = gamePlayer.getCardsInHand();
-			Card card1 = hand.get(0);
-			Card card2 = hand.get(1);
-			System.out.println("First Card: " + card1.getValue());
-			System.out.println("Second Card: " + card2.getValue());
-			
-			System.out.println("player" + "ID: " + gamePlayer.getPlayerID());
-			System.out.println("player" + gamePlayer.getPlayerID() + " Bet: " + gamePlayer.getBetAmount());
-			System.out.println("player" + gamePlayer.getPlayerID() + " Hand: " + gamePlayer.getHandValue());
-			
-			
-			if(gamePlayer.getHandWithAce() != 0) {
-				System.out.println(gamePlayer.getPlayerID() + " Hand with ace: " + gamePlayer.getHandWithAce());
-			}
-			
-			
-			
-			System.out.println("player" + gamePlayer.getPlayerID() + " Stand: " + gamePlayer.getStand());
-			System.out.println("player" + gamePlayer.getPlayerID() + " Bust: " + gamePlayer.getBust());
-			response = new Response();
-		}
-	}
-	
-	public void dealerAutoLose() {
-		
-	}
-	
 	public void reset() throws IOException {
-		if(isDealer == true) {
-			handVal = 0;
-		}else {
+		if(!isDealer) {
 			stand = false;
 			betPlaced = false;
 			turnEnd = false;
-			handVal = 0;
 			initialDraw = true;
 		}
 		
@@ -295,7 +250,6 @@ public class ClientHandler implements Runnable{
 	
 	
 	public void sendGameStateToClient(List<PlayerData> allGamePlayers, int numPlayers) throws IOException {
-	    System.out.println("SENDING GAMESTATE");
 	    response = new Response();
 	    response.setType(ResponseType.UPDATE);
 	    
@@ -365,7 +319,6 @@ public class ClientHandler implements Runnable{
 	}
 	
 	public void setStand(ClientMessage fromClient, List<PlayerData> allGamePlayers) throws IOException {
-		System.out.println("player wants to stand");
 		for(int i = 0; i < gamePlayers.getNumPlayers(); i++) {
 			PlayerData gamePlayer = allGamePlayers.get(i);
 			if(fromClient.getPlayerID() == gamePlayer.getPlayerID()) {
@@ -412,11 +365,6 @@ public class ClientHandler implements Runnable{
 				}
 			}
 			
-			//Debug statements
-			System.out.println("Dealers hand val: " + dealerData.getHandValue());
-			
-			//assign handVal to dealers current hand to determine action
-			handVal = dealerData.getHandValue();
 			
 			response = new Response();
 			if(dealerData.getHandValue() < 17) {
@@ -442,18 +390,15 @@ public class ClientHandler implements Runnable{
 					playerData = playerCheck;
 				}
 			}
-			
-			//Get handValue after card is added
-			handVal = playerData.getHandValue();
-			System.out.println("Hand after hit" + playerData.getHandValue());
-			//Check if player has an ace
+
+			/*//Check if player has an ace
 			if(playerData.getHandWithAce() != 0) {
 				System.out.println("Regular Hand: " + handVal);
 				System.out.println("Ace Hand: " + playerData.getHandWithAce());
-			}
+			}*/
 			
 			
-			if(handVal <= 21) {
+			if(playerData.getHandValue() <= 21) {
 				response = new Response();
 				response.setType(ResponseType.PLAYER_TURN);
 				objectOutputStream.writeObject(response);
@@ -473,7 +418,6 @@ public class ClientHandler implements Runnable{
 			}
 		}
 		
-		System.out.println("player wants to hit");
 	}
 	
 	public void startRound(List<PlayerData> allGamePlayers) throws IOException{
@@ -481,7 +425,6 @@ public class ClientHandler implements Runnable{
 		server.sendBetRequestToAllPlayers();
 		gameLogic.initialDeal(allGamePlayers);
 		server.checkBetPlaced();
-		debug(allGamePlayers);
 		
 		//Sending gamestate to all players
 		server.sendGameState();
@@ -495,7 +438,6 @@ public class ClientHandler implements Runnable{
 		}
 		if(allPlayersDone) {
 			server.setAllClientsInitialDraw();
-			debug(allGamePlayers);
 			for(int i = 0; i < allGamePlayers.size(); i++) {
 				PlayerData dealerCheck = allGamePlayers.get(i);
 				if(dealerCheck.getPlayerID() == 0) {
@@ -559,7 +501,6 @@ public class ClientHandler implements Runnable{
 		for(int i = 0; i < allGamePlayers.size(); i++) {
 			PlayerData playerToRemove = allGamePlayers.get(i);
 			if(playerToRemove.getPlayerID() == playerIDRemove) {
-				System.out.println("REMOVING " + playerToRemove.getPlayerID());
 				allGamePlayers.remove(i);
 				break;
 			}
@@ -602,9 +543,7 @@ public class ClientHandler implements Runnable{
 	public void updatePlayerID(List<PlayerData> allGamePlayers) throws IOException {
 		for(int i = 0; i < allGamePlayers.size(); i++) {
 			PlayerData currPlayer = allGamePlayers.get(i);
-			System.out.println("CURRPLAYER USERNAME: " + currPlayer.getUserName() + "CLIENT USERNAME" + username + currPlayer.getPlayerID());
 			if(currPlayer.getUserName().equals(username)) {
-				System.out.println("UPDATING PLAYER ID" + currPlayer.getPlayerID());
 				this.playerID = currPlayer.getPlayerID();
 				response = new Response();
 				response.setType(ResponseType.UPDATE_PLAYERID);
