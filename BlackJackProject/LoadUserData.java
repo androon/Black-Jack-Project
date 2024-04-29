@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -33,6 +35,37 @@ public class LoadUserData {
 				System.out.println(e);
 			}
 	}
+	
+	public void saveData() throws IOException {
+		File userFile = new File("userData.txt");
+		FileWriter writer = new FileWriter(userFile);
+		try {
+            writer = new FileWriter(userFile);
+
+            for (int i = 0; i < userData.size(); i++) {
+                UserData user = userData.get(i);
+                String writeLine = user.getUsername() + "," +
+                              user.getPassword() + "," +
+                              user.getIsDealer() + "," +
+                              user.getWinAmount() + "," +
+                              user.getLossAmount() + "," +
+                              user.getBankroll();
+
+                writer.write(writeLine);
+                writer.write("\n");
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
+    }
 	
 	public List<UserData> getUserList(){
 		return userData;
