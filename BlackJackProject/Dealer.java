@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -26,7 +28,6 @@ public class Dealer {
     private Client client;
     private boolean isDealer;
     ObjectInputStream objectInputStream;
-    private boolean roundStart = false;
     
     private volatile boolean listen = true;
     
@@ -59,7 +60,17 @@ public class Dealer {
     private void displayDealerGUI() throws  IOException, ClassNotFoundException{
     	
     	frame = new JFrame("BlackJack: Dealer");
-    	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    	//When window is closed call logout()
+		frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    logout();
+                } catch (IOException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
     	frame.setSize(800,450);
     	
     	gameInfoArea = new JTextArea();
@@ -201,7 +212,6 @@ public class Dealer {
 	
     
     public void processServerResponse(Response fromServer) throws InterruptedException {
-    	System.out.println(fromServer.getType());
     	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
     		for(int i = 0; i < allGamePlayers.size(); i++) {
     			allGamePlayers.remove(i);
@@ -218,7 +228,6 @@ public class Dealer {
     }
  
     public void updateGUI(Response fromServer) {
-    	System.out.println("INITIAL DRAW? " + fromServer.getInitialDraw());
     	if(fromServer.getInitialDraw() == true) {
 			for(int i = 0; i < allGamePlayers.size(); i++) {
 				PlayerData clear = allGamePlayers.get(i);

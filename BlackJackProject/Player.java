@@ -1,18 +1,17 @@
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,7 +21,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 public class Player {
 	private String username;
@@ -33,7 +31,6 @@ public class Player {
 	private Client client;
 	ObjectInputStream objectInputStream;
 	private int betAmount = 0;
-	private int currPlayer = 0;
 	private int actionNum = 0;
 	private volatile boolean listen = true;
 	
@@ -65,8 +62,19 @@ public class Player {
 	}
 	
 	private void displayGUI() throws IOException, ClassNotFoundException {
-			frame = new JFrame("BlackJack Player" + playerID);
-			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frame = new JFrame("BlackJack Player");
+			
+			//When window is closed call logout()
+			frame.addWindowListener(new WindowAdapter() {
+	            @Override
+	            public void windowClosing(WindowEvent e) {
+	                try {
+	                    logout();
+	                } catch (IOException | ClassNotFoundException ex) {
+	                    ex.printStackTrace();
+	                }
+	            }
+	        });
 			frame.setSize(800,450);
 			
 			gameInfoArea = new JTextArea();
@@ -226,8 +234,6 @@ public class Player {
 	
 	
 	public void processServerResponse(Response fromServer) throws InterruptedException {
-		System.out.println(fromServer.getType());
-		System.out.println(fromServer.getPlayerID());
 		switch (fromServer.getType()) {
 	        case ALL_BETS:
 	        	depositButton.setEnabled(false);
@@ -261,12 +267,10 @@ public class Player {
 	            break;
 	        
 	        case UPDATE:
-	        	System.out.println("UPDATING");
 	            updateGUI(fromServer); 
 	            break;
 	        
 	        case UPDATE_BANKROLL:
-	        	System.out.println("UPDATING BANKROLL");
 	        	updateBankRoll(fromServer);
 	        	break;
 	        
@@ -340,7 +344,6 @@ public class Player {
 	        	JTextArea dealerInfoArea = new JTextArea();
 	        	dealerInfoArea.setEditable(false);
 	        	dealerInfoArea.setOpaque(false);
-	        	System.out.println(player.getHandWithAce());
 	        	String dealerInfo = "Dealer\n" +
 	        						"Hand Value: " + player.getHandValue() + "\n";
 	        						if(player.getHandWithAce()!= 0 && fromServer.getInitialDraw() == false) {
@@ -516,7 +519,6 @@ public class Player {
 	
 	public void updatePlayerID(Response fromServer) {
 		playerID = fromServer.getPlayerID();
-		System.out.println("NEW PLAYER ID" + playerID);
 		gameInfoArea.setText("Your ID: " + playerID + "\n" + 
 	 			 			 "Your BankRoll: " + bankRoll + "\n" +
 	 			 			 "Your Bet: " + betAmount + "\n" +
@@ -572,7 +574,4 @@ public class Player {
 		client.sendDoubleDownRequest(playerID, betAmount);
 	}
 	
-	public void debug() throws IOException{
-		client.debug();
-	}
 }

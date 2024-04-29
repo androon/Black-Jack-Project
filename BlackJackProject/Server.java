@@ -4,10 +4,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
-
-
-
 
 public class Server {
 	static LoadUserData loadData;
@@ -63,8 +59,6 @@ public class Server {
 
 	public void findClient() throws IOException {
 		while(currPlayer != clients.size()) {
-			System.out.println(currPlayer);
-			System.out.println(clients.size());
 			for(int i = 0; i < clients.size(); i++) {
 				ClientHandler currentClientHandler = clients.get(i);
 				if(currentClientHandler.getClientHandlerID() == currPlayer) {
@@ -154,7 +148,6 @@ public class Server {
 		allPlayersDone = false;
 		int count = 1;
 		while(allPlayersDone == false) {
-			System.out.println("Waiting for players to finish");
 			for(int i = 0; i < clients.size(); i++) {
 				ClientHandler clientHandler = clients.get(i);
 				if(clientHandler.getClientHandlerID() == currPlayerDoneCheck) {
@@ -186,7 +179,6 @@ public class Server {
 		boolean allClientHandlerReset = false;
 		int count = 0;
 		while(!allClientHandlerReset) {
-			System.out.println("reset");
 			for(int i = 0; i < clients.size(); i++) {
 				ClientHandler clientHandler = clients.get(i);
 				if(clientHandler.getClientHandlerID() == currClientHandler) {

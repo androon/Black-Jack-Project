@@ -33,7 +33,6 @@ class Deck {
     
     public Card drawCard() {
         if (cards.isEmpty()) {
-            System.out.println("No more cards");
             return null;
         }
         return cards.remove();

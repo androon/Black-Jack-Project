@@ -5,6 +5,7 @@ public class GameLogic {
 	private int playerCheck = 0;
 	private int count = 0;
 	private int playerIDOutcomeCheck = 1;
+	
 	public GameLogic() {
 	}
 	
@@ -20,7 +21,6 @@ public class GameLogic {
 				
 				//If card drawn is an ace check if it busts the hand
 				if(cardVal == 1){
-					System.out.println("DREW AN ACE");
 					if(currPlayer.getHandValue() + 11 <= 21) {
 						currPlayer.setHandWithAce(currPlayer.getHandValue() + 11);
 					}else if(currPlayer.getHandValue() + 11 > 21) {
@@ -122,7 +122,6 @@ public class GameLogic {
 			if(countOutcome == allGamePlayers.size() - 1) {
 				allOutcomesChecked = true;
 			}
-			System.out.println("Still looping???????");
 		}
 	}
 	
