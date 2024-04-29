@@ -1,10 +1,14 @@
+package blackjack;
+
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-
+/*
+ * this class is called when the server is instantiated
+ * reads a text file called userData.txt that contains login credentials and creates a linked list of each user with their username, password, whether the client is a dealer or player
+ * also has an access modifier to get that list  
+ * */
 public class LoadUserData {
 	List<UserData> userData = new LinkedList<UserData>();
 	
@@ -35,37 +39,6 @@ public class LoadUserData {
 				System.out.println(e);
 			}
 	}
-	
-	public void saveData() throws IOException {
-		File userFile = new File("userData.txt");
-		FileWriter writer = new FileWriter(userFile);
-		try {
-            writer = new FileWriter(userFile);
-
-            for (int i = 0; i < userData.size(); i++) {
-                UserData user = userData.get(i);
-                String writeLine = user.getUsername() + "," +
-                              user.getPassword() + "," +
-                              user.getIsDealer() + "," +
-                              user.getWinAmount() + "," +
-                              user.getLossAmount() + "," +
-                              user.getBankroll();
-
-                writer.write(writeLine);
-                writer.write("\n");
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-            }
-        }
-    }
 	
 	public List<UserData> getUserList(){
 		return userData;

@@ -1,6 +1,13 @@
+package blackjack;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Collections;
+
+/*
+ * Deck of Cards Class
+ * Has a linkedlist of type Cards
+ * Option to initialize,shuffle, draw Cards
+ * */
 
 class Deck {
     private Queue<Card> cards;

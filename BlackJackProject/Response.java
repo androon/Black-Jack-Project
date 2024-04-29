@@ -1,6 +1,11 @@
+package blackjack;
+
 import java.io.Serializable;
 import java.util.List;
-
+/*
+ * Related to messageType class, this class contains messages from the server to the client
+ * this class also contains a list of all the game participants with their relevant information such as handValue, betAmount and such
+ * */
 public class Response implements Serializable{
 	private ResponseType type;
 	private boolean validated;
@@ -9,17 +14,16 @@ public class Response implements Serializable{
 	private int winAmount;
 	private int lossAmount;
 	private int bankRoll;
-	private int betAmount;
 	private String username;
-
+	//private GamePlayers gamePlayers;
+	private List<PlayerData> allGamePlayers;
 	private int numPlayers;
 	
-	private int handWithAce;
-	private String handString;
-	private int handValue;
-	private boolean initialDraw;
 	
-
+	//DEBUG
+	private int handValue;
+	private int dealerHand;
+	private String handString;
 	public Response() {
 		this.type = ResponseType.UNKNOWN;
 		this.validated = false;
@@ -29,6 +33,7 @@ public class Response implements Serializable{
 		this.lossAmount = 0;
 		this.bankRoll = 0;
 		this.numPlayers = 0;
+		this.allGamePlayers = null;
 	}
 	
 	public int getHandValue() {
@@ -37,6 +42,14 @@ public class Response implements Serializable{
 	
 	public void setHandValue(int handValue) {
 		this.handValue = handValue;
+	}
+	
+	public int getDealerHandValue() {
+		return dealerHand;
+	}
+	
+	public void setDealerHand(int dealerHand) {
+		this.dealerHand = dealerHand;
 	}
 	
 	public ResponseType getType() {
@@ -71,28 +84,16 @@ public class Response implements Serializable{
 		return this.lossAmount;
 	}
 	
+	public List<PlayerData> getGamePlayers(){
+		return allGamePlayers;
+	}
+	
 	public int getNumPlayers() {
 		return numPlayers;
 	}
 	
 	public String getHandString() {
 		return handString;
-	}
-	
-	public int getBetAmount() {
-		return betAmount;
-	}
-	
-	public int getHandWithAce() {
-		return handWithAce;
-	}
-	
-	public boolean getInitialDraw() {
-		return initialDraw;
-	}
-	
-	public void setHandWithAce(int handWithAce) {
-		this.handWithAce = handWithAce;
 	}
 	
 	public void setType(ResponseType type) {
@@ -127,6 +128,9 @@ public class Response implements Serializable{
 		this.username = username;
 	}
 	
+	public void setGamePlayers(List<PlayerData> allGamePlayers){
+		this.allGamePlayers = allGamePlayers;
+	}
 	
 	public void setNumPlayers(int numPlayers) {
 		this.numPlayers = numPlayers;
@@ -135,13 +139,16 @@ public class Response implements Serializable{
 	public void setCardHandString(String handString) {
 		this.handString = handString;
 	}
-	
-	public void setBetAmount(int betAmount) {
-		this.betAmount = betAmount;;
+	public void reset() {
+		this.validated = false;
+		this.playerID = 0;
+		this.isDealer = false;
+		this.winAmount = 0;
+		this.lossAmount = 0;
+		this.bankRoll = 0;
+		this.numPlayers = 0;
+		this.allGamePlayers = null;
+		this.handValue = 0;
+		this.handString = "";
 	}
-	
-	public void setInitialDraw(boolean initialDraw) {
-		this.initialDraw = initialDraw;
-	}
-	
 }

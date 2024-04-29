@@ -1,3 +1,5 @@
+package blackjack;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
@@ -28,6 +30,15 @@ public class Client {
 	private String address;
 	Client client;
 	
+	
+	/*
+	 * Client Class has the blueprint of what a single instance of Client object has
+	 *  All Clients, dealer or player, have actions that they can perform in their respective GUI
+	 *  The actions send bet request, send hit request, and others can be called upon by clients
+	 *  All Clients utilize Socket Class to create a socket to connect to the Server Socket
+	 *  All Clients also have instances of objectinputstream and objectoutputstream to read and write messages to and from server 
+	 * */
+	
 	public static void main(String[]  args) throws  IOException, ClassNotFoundException 
 	{
 		Client client = new Client();
@@ -43,11 +54,12 @@ public class Client {
 				LayoutManager layout = new FlowLayout();
 				panel.setLayout(layout);
 				
+				// The Client inputs the Server Address to Connect to the Server
 				JLabel label = new JLabel("Enter server address");
 				JTextField textField = new JTextField(20);
 				
 				JButton submitButton = new JButton("Submit");
-
+		        // Add the ActionListener to the button
 		        submitButton.addActionListener(new ActionListener() {
 		            @Override
 		            public void actionPerformed(ActionEvent e) {
@@ -83,9 +95,11 @@ public class Client {
 				frame.setLocationRelativeTo(null);
 				frame.setVisible(true);
 				
+
 				
 	}
 	
+	// All available actions that clients can perform
 	public void sendBetRequest(int playerID, int betAmount) throws IOException {
 		ClientMessage betMessage = new ClientMessage();
 		betMessage.setPlayerID(playerID);
@@ -108,10 +122,9 @@ public class Client {
 		objectOutputStream.writeObject(standMessage);
 	}
 	
-	public void sendDoubleDownRequest(int playerID, int betAmount) throws IOException{
+	public void sendDoubleDownRequest(int playerID) throws IOException{
 		ClientMessage doubledownMessage = new ClientMessage();
 		doubledownMessage.setPlayerID(playerID);
-		doubledownMessage.setBetAmount(betAmount);
 		doubledownMessage.setMessageType(MessageType.DOUBLE_DOWN);
 		objectOutputStream.writeObject(doubledownMessage);
 	}
@@ -128,32 +141,12 @@ public class Client {
 		objectOutputStream.writeObject(endRoundMessage);
 	}
 	
-	public void sendDepositRequest(int playerID, int depositAmount) throws IOException {
-		ClientMessage depositMessage = new ClientMessage();
-		depositMessage.setMessageType(MessageType.DEPOSIT);
-		depositMessage.setPlayerID(playerID);
-		depositMessage.setDepAmount(depositAmount);
-		objectOutputStream.writeObject(depositMessage);
-	}
-	
-	public void sendLogoutRequest(String username, int playerID, int bankRoll, int numWin, int numLoss) throws IOException {
-		ClientMessage logoutMessage = new ClientMessage();
-		logoutMessage.setMessageType(MessageType.LOGOUT);
-		logoutMessage.setUsername(username);
-		logoutMessage.setBankroll(bankRoll);
-		logoutMessage.setPlayerID(playerID);
-		logoutMessage.setWinAmount(numWin);
-		logoutMessage.setLossAmount(numLoss);
-		objectOutputStream.writeObject(logoutMessage);
-	}
-	
 	
 	public void debug() throws IOException{
 		ClientMessage debug = new ClientMessage();
 		debug.setMessageType(MessageType.DEBUG);
 		objectOutputStream.writeObject(debug);
 	}
-	
 	
 }
 
