@@ -1,7 +1,14 @@
+package blackjack;
+
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-
+/*
+ * Class contains information related to a player during a round of blackjack
+ * initially the players start with default values such as betAmount 0, playerStand false
+ * as the game progresses, the values change
+ * at the end of the round, resetHand() changes the player data to default values again 
+ * */
 public class PlayerData implements Serializable{
 
     private String userName;
@@ -13,17 +20,10 @@ public class PlayerData implements Serializable{
     private int bankRoll;
     private int handWithAce = 0;
     private boolean isDealer;
-    private int numLoss = 0;
-    private int numWin = 0;
     private int numHand = 0; // Start with 0 cards in hand
     List<Card> hand = new LinkedList<>();
-    private String handString;
-    
-    public PlayerData() {
-    }
-    
-    
-    public PlayerData(String userName, int playerID, int bankRoll, boolean isDealer, int numWin, int numLoss)
+
+    public PlayerData(String userName, int playerID, int bankRoll, boolean isDealer)
     {
         this.userName = userName;
         this.playerID = playerID;
@@ -32,8 +32,6 @@ public class PlayerData implements Serializable{
         this.betAmount = 0;
         this.bankRoll = bankRoll;
         this.isDealer = isDealer;
-        this.numWin = numWin;
-        this.numLoss = numLoss;
     }
     
     public void reset() {
@@ -76,26 +74,10 @@ public class PlayerData implements Serializable{
     public int getBankRoll() {
     	return bankRoll;
     }
-    
-    public int getWinAmount() {
-    	return numWin;
-    }
-    
-    public int getLossAmount() {
-    	return numLoss;
-    }
-    
-    public void setPlayerID(int id) {
-    	this.playerID = id;
-    }
 
     public void setHandValue(int value)
     {
         handValue=value;
-    }
-    
-    public String getHandString() {
-    	return handString;
     }
 
     public void setBetAmount(int amount)
@@ -137,20 +119,8 @@ public class PlayerData implements Serializable{
     	return returnString;
     }
     
-    public void setHandString(String string) {
-    	this.handString = string;
-    }
-    
     public void setHandWithAce(int value) {
     	handWithAce = value;
-    }
-    
-    public void setWinAmount(int numWin) {
-    	this.numWin = numWin;
-    }
-    
-    public void setLossAmount(int numLoss) {
-    	this.numLoss = numLoss;
     }
     
     public int getHandWithAce() {
@@ -160,7 +130,6 @@ public class PlayerData implements Serializable{
     public boolean getIsDealer() {
     	return isDealer;
     }
-    
     
     
     

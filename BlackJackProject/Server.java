@@ -1,3 +1,8 @@
+//comments will be for JUNIT tests
+
+
+package blackjack;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -6,7 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
-
+/*
+ * Server class utilizes ServerSocket class to create a listening port to which a client can connect to
+ * when the server is run, it loads player and dealer data from a text file used to authenticate credentials
+ * Once a client connects to the port, clientHandler class is called
+ * Server class creates a list of connected clients through a Linked List
+ * Game of BlackJack requires to iterate through all the clients. The Server class has methods that help achieve this
+ * 
+ * */
 
 
 public class Server {
@@ -60,7 +72,16 @@ public class Server {
 		}
 	}
 	
-
+	
+	
+	/*
+	 * Methods the iterate through the list of Clients
+	 * waitForResponse() method iterates through all the clients until all the clients have made a stand request
+	 * sendBetRequestToALLPlayers() method iterates through all the clients in the list until all the clients have received a bet request message
+	 * checkBetPlaced() method iterates through the Client list to check if all the clients have placed bets, if not it enters waitForBet() loop
+	 * */
+	//goes to client handler with playerID 1 - whatever incrementally
+	
 	public void findClient() throws IOException {
 		while(currPlayer != clients.size()) {
 			System.out.println(currPlayer);
@@ -122,6 +143,7 @@ public class Server {
 		boolean allBetsPlaced = false;
 		
 		while(allBetsPlaced == false) {
+			System.out.println("still looping");
 			for(int i = 0; i < clients.size(); i++) {
 				ClientHandler clientHandler = clients.get(i);
 				if(clientHandler.getClientHandlerID() == currPlayerBet) {
@@ -170,7 +192,7 @@ public class Server {
 		}
 		return true;
 	}
-	
+	// resets the player statistics
 	public void resetGame() throws IOException {
 		//Reset bookkeeping
 		allPlayersDone = false;
@@ -233,34 +255,5 @@ public class Server {
 			clientHandler.sendGameStateToClient(allGamePlayers, numPlayers);
 		}
 	}
-	
-	public void updateAllID() throws IOException {
-		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
-		for(int i = 0; i < clients.size(); i++) {
-			ClientHandler clientHandler = clients.get(i);
-			if(clientHandler.getClientHandlerID() != 0) {
-				clientHandler.updatePlayerID(allGamePlayers);
-			}
-		}
-		
-	}
-	
-	public void setAllClientsInitialDraw() {
-		for(int i = 0; i < clients.size(); i++) {
-			ClientHandler clientHandler = clients.get(i);
-			clientHandler.setInitialDraw(false);
-		}
-	}
-	
-	public void removeClient(String username) {
-		for(int i = 0; i < clients.size(); i++) {
-			ClientHandler clientHandler = clients.get(i);
-			if(clientHandler.getClientUsername() == username){
-				clients.remove(i);
-				break;
-			}
-		}
-	}
-	
 }
 
