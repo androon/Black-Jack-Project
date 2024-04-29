@@ -1,13 +1,3 @@
-package blackjack;
-
-/*
- * Game logic is specific to the game of black jack
- * contains actions that add cards to player handValue
- * there is the first deal of the cards after all the bets are placed
- * then when a hit action is sent by the client to the server
- * also contains a method that checks the outcome of the round when all the players have either made a stand or their handValue exceeds 21
- * the handValues are then compared of each players with the dealer to determine the winner of the hand
- * */
 import java.util.List;
 
 public class GameLogic {
@@ -30,16 +20,13 @@ public class GameLogic {
 				
 				//If card drawn is an ace check if it busts the hand
 				if(cardVal == 1){
+					System.out.println("DREW AN ACE");
 					if(currPlayer.getHandValue() + 11 <= 21) {
 						currPlayer.setHandWithAce(currPlayer.getHandValue() + 11);
 					}else if(currPlayer.getHandValue() + 11 > 21) {
 						currPlayer.setHandWithAce(0);
 					}
-				}
-				
-				//If player already has an ace hand, check if adding cardVal will bust the hand
-				//If it does, set handWithAce to 0
-				if(currPlayer.getHandWithAce() != 0) {
+				}else if(currPlayer.getHandWithAce() != 0 && cardVal != 1) {
 					int checkAceAdd = currPlayer.getHandWithAce() + cardVal;
 					//If it's over 21 get rid of the ace hand
 					if(checkAceAdd > 21) {
@@ -114,21 +101,17 @@ public class GameLogic {
 				PlayerData currPlayer = allGamePlayers.get(i);
 				if(currPlayer.getPlayerID() == playerIDOutcomeCheck) {
 					if(currPlayer.getBust() == true) {
-						//Take money
-						currPlayer.setBankRoll(currPlayer.getBankRoll() - currPlayer.getBetAmount());
-						System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Loss");
+						currPlayer.setLossAmount(currPlayer.getLossAmount() + 1);					
 					}else if(dealerData.getHandValue() > 21 && currPlayer.getBust() == false){
 						currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
+						currPlayer.setWinAmount(currPlayer.getWinAmount() + 1);
 					}else {
-						//Give money
 						if(dealerData.getHandValue() > currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Loss");
-							currPlayer.setBankRoll(currPlayer.getBankRoll() - currPlayer.getBetAmount());
+							currPlayer.setLossAmount(currPlayer.getLossAmount() + 1);
 						}else if(dealerData.getHandValue() < currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Win");
 							currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
+							currPlayer.setWinAmount(currPlayer.getWinAmount() + 1);
 						}else if(dealerData.getHandValue() == currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Push");
 							currPlayer.setBankRoll(currPlayer.getBankRoll() + currPlayer.getBetAmount());
 						}
 					}
@@ -139,9 +122,10 @@ public class GameLogic {
 			if(countOutcome == allGamePlayers.size() - 1) {
 				allOutcomesChecked = true;
 			}
-			System.out.println("Still looping");
+			System.out.println("Still looping???????");
 		}
 	}
+	
 	
 	
 	public void setDeck(Deck deck) {

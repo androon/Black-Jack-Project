@@ -1,8 +1,3 @@
-package blackjack;
-
-/*
- * Card class
- * */
 import java.io.Serializable;
 
 class Card implements Serializable{
@@ -17,4 +12,3 @@ class Card implements Serializable{
     }
     
 }
-

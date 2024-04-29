@@ -1,11 +1,5 @@
-package blackjack;
-
-
 import java.util.List;
-/*
- * Assigns each client with a immutable player ID
- * Options to resetDeck
- * */
+
 public class GameManager {
 	private int playerID;
 	private static int count = 0;
@@ -35,6 +29,12 @@ public class GameManager {
 		deck = new Deck();
 		deck.shuffle();
 		gameLogic.setDeck(deck);
+	}
+	
+	public void subtractID() {
+		if(count > 0) {
+			count--;
+		}
 	}
 	
 }
