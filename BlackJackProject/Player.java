@@ -5,8 +5,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.net.SocketException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -33,6 +35,9 @@ public class Player {
 	private int betAmount = 0;
 	private int currPlayer = 0;
 	private int actionNum = 0;
+	private volatile boolean listen = true;
+	
+	Thread serverListenThread;
 	
 	private JFrame frame;
     private JTextArea gameInfoArea; // Displays dealer and player hands
@@ -40,6 +45,7 @@ public class Player {
     private JButton standButton;
     private JButton doubleDownButton;
     private JButton depositButton;
+    private JButton logoutButton;
     private JPanel playersPanel;
     private JPanel dealerPanel;
     private JLabel dealerLabel;
@@ -60,12 +66,12 @@ public class Player {
 	
 	private void displayGUI() throws IOException, ClassNotFoundException {
 			frame = new JFrame("BlackJack Player" + playerID);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 			frame.setSize(800,450);
 			
 			gameInfoArea = new JTextArea();
 			gameInfoArea.setEditable(false);
-			Font customFont = new Font("Arial", Font.BOLD, 20);
+			Font customFont = new Font("Arial", Font.BOLD, 18);
 			gameInfoArea.setFont(customFont);
 			JScrollPane scrollPane = new JScrollPane(gameInfoArea);
 			
@@ -73,7 +79,9 @@ public class Player {
 			
 			String info = "Your ID: " + playerID + "\n" +
 						  "Your BankRoll: " + bankRoll + "\n" +
-						  "Your Bet: " + betAmount;
+						  "Your Bet: " + betAmount + "\n" +
+						  "Wins: " + numWin + "\n" +
+						  "Losses: " + numLoss;
 			
 			gameInfoArea.setText(info);
 			
@@ -83,10 +91,12 @@ public class Player {
 			standButton = new JButton("Stand");
 			doubleDownButton = new JButton("Double Down");
 			depositButton = new JButton("Deposit");
+			logoutButton = new JButton("Logout");
 			buttons.add(hitButton);
 			buttons.add(standButton);
 			buttons.add(doubleDownButton);
 			buttons.add(depositButton);
+			buttons.add(logoutButton);
 			
 			dealerPanel = new JPanel(new FlowLayout());
 			dealerLabel = new JLabel("Dealer");
@@ -114,6 +124,7 @@ public class Player {
             standButton.setEnabled(false);
             doubleDownButton.setEnabled(false);
 			depositButton.setEnabled(true);
+			logoutButton.setEnabled(true);
 			
 			frame.setVisible(true);
 			
@@ -161,38 +172,78 @@ public class Player {
 				}
 			});
 		
+			logoutButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						logout();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (ClassNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
 			
 			
 			
 		}
 			
 	public void listenToServer() throws ClassNotFoundException, IOException {
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					while(true) {
-						Response fromServer = (Response) objectInputStream.readObject();
-						processServerResponse(fromServer);
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-				}
-			}
-		}).start();
+		serverListenThread = new Thread(new Runnable() {
+		    public void run() {
+		        while (listen) {
+		            try {
+		                Response fromServer = (Response) objectInputStream.readObject();
+		                processServerResponse(fromServer);
+		            }catch (EOFException e) {
+		                listen = false;
+		            }catch (SocketException e) {
+		            	listen = false;
+		            }
+		            catch (Exception e) {
+		                e.printStackTrace();
+		            }
+		        }
+		    }
+		});
+		serverListenThread.start();
+	}
+	
+	public void stopListening() {
+	    this.listen = false;
+	    if (serverListenThread.isAlive()) {
+	    	serverListenThread.interrupt();
+	    	try {
+	            serverListenThread.join();
+	        } catch (InterruptedException e) {
+	            Thread.currentThread().interrupt();
+	        }
+	    }
 	}
 	
 	
 	public void processServerResponse(Response fromServer) throws InterruptedException {
-
+		System.out.println(fromServer.getType());
+		System.out.println(fromServer.getPlayerID());
 		switch (fromServer.getType()) {
 	        case ALL_BETS:
+	        	depositButton.setEnabled(false);
+	        	logoutButton.setEnabled(false);
 	            betGUI(); 
+	            
+	            for(int i = 0; i < allGamePlayers.size();i++) {
+	            	allGamePlayers.remove(i);
+	            }
 	            break;
 	        
 	        case PLAYER_TURN:
 	            hitButton.setEnabled(true);
 	            standButton.setEnabled(true);
 	            depositButton.setEnabled(false);
+	            logoutButton.setEnabled(false);
 	            if(actionNum == 0) {
 	            	doubleDownButton.setEnabled(true);
 	            }else {
@@ -206,17 +257,30 @@ public class Player {
 	        	hitButton.setEnabled(false);
 	            standButton.setEnabled(false);
 	            doubleDownButton.setEnabled(false);
-	            depositButton.setEnabled(true);
 	            actionNum = 0;
 	            break;
 	        
 	        case UPDATE:
+	        	System.out.println("UPDATING");
 	            updateGUI(fromServer); 
 	            break;
 	        
 	        case UPDATE_BANKROLL:
 	        	System.out.println("UPDATING BANKROLL");
 	        	updateBankRoll(fromServer);
+	        	break;
+	        
+	        case UPDATE_PLAYERID:
+	        	updatePlayerID(fromServer);
+	        	break;
+	        
+	        case UPDATE_RECORD:
+	        	updateRecord(fromServer);
+	        	break;
+	        	
+	        case ROUND_DONE:
+	        	depositButton.setEnabled(true);
+	        	logoutButton.setEnabled(true);
 	        	break;
 	        
 	        default:
@@ -226,14 +290,7 @@ public class Player {
 	}
 
 	public void updateGUI(Response fromServer) throws InterruptedException {
-		if(fromServer.getInitialDraw() == true) {
-			for(int i = 0; i < allGamePlayers.size(); i++) {
-				PlayerData clear = allGamePlayers.get(i);
-				clear.setHandWithAce(0);
-			}
-		}
-
-	    
+			    
 	    PlayerData data = new PlayerData();
 	    
 	    //If first player to add add player
@@ -315,8 +372,11 @@ public class Player {
 		        	bankRoll = player.getBankRoll();
 		        	betAmount = player.getBetAmount();
 		        	gameInfoArea.setText("Your ID: " + playerID + "\n" + 
-		        						 "Your BankRoll: " + bankRoll + "\n" +
-		        						 "Your Bet: " + betAmount);
+	 			 			 			"Your BankRoll: " + bankRoll + "\n" +
+	 			 			 			"Your Bet: " + betAmount + "\n" +
+	 			 			 			"Wins: " + numWin + "\n" +
+	 			 			 			"Losses: " + numLoss);
+
 		        	
 		        }
 		        Font customFont = new Font("Arial", Font.PLAIN, 14);
@@ -335,6 +395,7 @@ public class Player {
 	    
 	    
 	}
+	
 	
 	public void depositGUI() {
 		JFrame depositFrame = new JFrame("Deposit amount");
@@ -443,13 +504,52 @@ public class Player {
 	
 	public void updateBankRoll(Response fromServer) {
 		bankRoll = fromServer.getBankroll();
-		gameInfoArea.setText("Your ID: " + playerID + "\n" + 
-				 			 "Your BankRoll: " + bankRoll + "\n" +
-				 			 "Your Bet: " + betAmount);
+		gameInfoArea.setText("Your ID: " + fromServer.getPlayerID() + "\n" + 
+	 			 			 "Your BankRoll: " + bankRoll + "\n" +
+	 			 			 "Your Bet: " + betAmount + "\n" +
+	 			 			 "Wins: " + numWin + "\n" +
+	 			 			 "Losses: " + numLoss);
 		
 		gameInfoArea.revalidate();
 		gameInfoArea.repaint();
 	}
+	
+	public void updatePlayerID(Response fromServer) {
+		playerID = fromServer.getPlayerID();
+		System.out.println("NEW PLAYER ID" + playerID);
+		gameInfoArea.setText("Your ID: " + playerID + "\n" + 
+	 			 			 "Your BankRoll: " + bankRoll + "\n" +
+	 			 			 "Your Bet: " + betAmount + "\n" +
+	 			 			 "Wins: " + numWin + "\n" +
+	 			 			 "Losses: " + numLoss);
+
+		gameInfoArea.revalidate();
+		gameInfoArea.repaint();
+	}
+	
+	public void updateRecord(Response fromServer) {
+		playerID = fromServer.getPlayerID();
+		numWin = fromServer.getWinAmount();
+		numLoss = fromServer.getLossAmount();
+		gameInfoArea.setText("Your ID: " + fromServer.getPlayerID() + "\n" + 
+	 			 			 "Your BankRoll: " + bankRoll + "\n" +
+	 			 			 "Your Bet: " + betAmount + "\n" +
+	 			 			 "Wins: " + numWin + "\n" +
+	 			 			 "Losses: " + numLoss);
+
+		gameInfoArea.revalidate();
+		gameInfoArea.repaint();
+	}
+	
+	public int logout() throws IOException, ClassNotFoundException {
+		client.sendLogoutRequest(username, playerID, bankRoll, numWin, numLoss);
+		stopListening();
+		frame.dispose();
+		
+		return 1;
+		
+	}
+	
 	
 	public void deposit(int depositAmount) throws IOException {
 		client.sendDepositRequest(playerID, depositAmount);

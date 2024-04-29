@@ -101,19 +101,17 @@ public class GameLogic {
 				PlayerData currPlayer = allGamePlayers.get(i);
 				if(currPlayer.getPlayerID() == playerIDOutcomeCheck) {
 					if(currPlayer.getBust() == true) {
-						//Already take bet from player
-						continue;
+						currPlayer.setLossAmount(currPlayer.getLossAmount() + 1);					
 					}else if(dealerData.getHandValue() > 21 && currPlayer.getBust() == false){
 						currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
+						currPlayer.setWinAmount(currPlayer.getWinAmount() + 1);
 					}else {
 						if(dealerData.getHandValue() > currPlayer.getHandValue()) {
-							//Already take money from player
-							continue;
+							currPlayer.setLossAmount(currPlayer.getLossAmount() + 1);
 						}else if(dealerData.getHandValue() < currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Win");
 							currPlayer.setBankRoll(currPlayer.getBankRoll() + (currPlayer.getBetAmount() * 2));
+							currPlayer.setWinAmount(currPlayer.getWinAmount() + 1);
 						}else if(dealerData.getHandValue() == currPlayer.getHandValue()) {
-							System.out.println("CurrPlayer: " + currPlayer.getPlayerID() + "Push");
 							currPlayer.setBankRoll(currPlayer.getBankRoll() + currPlayer.getBetAmount());
 						}
 					}
@@ -124,7 +122,7 @@ public class GameLogic {
 			if(countOutcome == allGamePlayers.size() - 1) {
 				allOutcomesChecked = true;
 			}
-			System.out.println("Still looping");
+			System.out.println("Still looping???????");
 		}
 	}
 	

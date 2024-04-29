@@ -38,5 +38,17 @@ public class UserData {
 	public int getBankroll() {
 		return this.bankRoll;
 	}
+	
+	public void setBankroll(int bankRoll) {
+		this.bankRoll = bankRoll;
+	}
+	
+	public void setWinAmount(int winAmount) {
+		this.winAmount = winAmount;
+	}
+	
+	public void setLossAmount(int lossAmount) {
+		this.lossAmount = lossAmount;
+	}
 
 }

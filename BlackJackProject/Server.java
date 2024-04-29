@@ -122,7 +122,6 @@ public class Server {
 		boolean allBetsPlaced = false;
 		
 		while(allBetsPlaced == false) {
-			System.out.println("still looping");
 			for(int i = 0; i < clients.size(); i++) {
 				ClientHandler clientHandler = clients.get(i);
 				if(clientHandler.getClientHandlerID() == currPlayerBet) {
@@ -235,10 +234,31 @@ public class Server {
 		}
 	}
 	
+	public void updateAllID() throws IOException {
+		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+			if(clientHandler.getClientHandlerID() != 0) {
+				clientHandler.updatePlayerID(allGamePlayers);
+			}
+		}
+		
+	}
+	
 	public void setAllClientsInitialDraw() {
 		for(int i = 0; i < clients.size(); i++) {
 			ClientHandler clientHandler = clients.get(i);
 			clientHandler.setInitialDraw(false);
+		}
+	}
+	
+	public void removeClient(String username) {
+		for(int i = 0; i < clients.size(); i++) {
+			ClientHandler clientHandler = clients.get(i);
+			if(clientHandler.getClientUsername() == username){
+				clients.remove(i);
+				break;
+			}
 		}
 	}
 	

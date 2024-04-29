@@ -136,12 +136,24 @@ public class Client {
 		objectOutputStream.writeObject(depositMessage);
 	}
 	
+	public void sendLogoutRequest(String username, int playerID, int bankRoll, int numWin, int numLoss) throws IOException {
+		ClientMessage logoutMessage = new ClientMessage();
+		logoutMessage.setMessageType(MessageType.LOGOUT);
+		logoutMessage.setUsername(username);
+		logoutMessage.setBankroll(bankRoll);
+		logoutMessage.setPlayerID(playerID);
+		logoutMessage.setWinAmount(numWin);
+		logoutMessage.setLossAmount(numLoss);
+		objectOutputStream.writeObject(logoutMessage);
+	}
+	
 	
 	public void debug() throws IOException{
 		ClientMessage debug = new ClientMessage();
 		debug.setMessageType(MessageType.DEBUG);
 		objectOutputStream.writeObject(debug);
 	}
+	
 	
 }
 

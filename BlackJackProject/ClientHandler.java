@@ -12,6 +12,7 @@ public class ClientHandler implements Runnable{
 	LoadUserData userDataFile;
 	List<UserData> userData;
 	private int playerID;
+	private String username;
 	GameManager gameManager;
 	OutputStream outputStream;
 	ObjectInputStream objectInputStream;
@@ -19,6 +20,8 @@ public class ClientHandler implements Runnable{
 	GamePlayers gamePlayers;
 	Server server;
 	GameLogic gameLogic;
+	private volatile boolean listenToClient = true;
+	
 	
 	private boolean stand = false;
 	private boolean betPlaced = false;
@@ -45,12 +48,12 @@ public class ClientHandler implements Runnable{
 			userData = userDataFile.getUserList();
 			
 			//Waiting for message type login
-			while(true) {
+			while(listenToClient) {
 				ClientMessage fromClient = (ClientMessage) objectInputStream.readObject();
+				System.out.println(fromClient.getType());
 				List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
 				processClientMessage(fromClient);
-				
-		}
+				}
 		}catch(EOFException e){
 			e.printStackTrace();
 		}catch (IOException e) {
@@ -60,22 +63,33 @@ public class ClientHandler implements Runnable{
 		}
 	}
 	
+	public void stopListening() {
+		listenToClient = false;
+		if(Thread.currentThread().isInterrupted()) {
+			Thread.currentThread().interrupt();
+		}
+	}
+	
 	public void processClientMessage(ClientMessage fromClient) throws IOException {
 		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
 		switch (fromClient.getType()) {
 			case LOGIN:
 				checkLogin(fromClient);
 				break;
+			
 			case BET:
 				addPlayerBet(fromClient,allGamePlayers);
 				break;
+			
 			case HIT:
 				gameLogic = gameManager.getGameLogic();
 				checkHit(gameLogic,allGamePlayers, fromClient);
 				break;
+			
 			case STAND:
 				setStand(fromClient,allGamePlayers);
 				break;
+			
 			case DOUBLE_DOWN:
 				gameLogic = gameManager.getGameLogic();
 				System.out.println("STILL IMPLEMENTING");
@@ -96,6 +110,10 @@ public class ClientHandler implements Runnable{
 			case DEPOSIT:
 				depositFunds(fromClient, allGamePlayers);
 				break;
+				
+			case LOGOUT:
+				logout(fromClient);
+				break;
 			default:
 				System.out.println("UNKNOWNS RESPONSE: " + fromClient.getType());
 				break;
@@ -111,7 +129,16 @@ public class ClientHandler implements Runnable{
 		for(int i = 0; i < userData.size(); i++) {
 			UserData user = userData.get(i);
 			if((fromClient.getUsername().compareTo(user.getUsername())== 0) && (fromClient.getPassword().compareTo(user.getPassword()) == 0)){
-				
+				List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
+				for(int j = 0; j < allGamePlayers.size(); j++) {
+					PlayerData checkInGame = allGamePlayers.get(j);
+					if(checkInGame.getUserName().equals(fromClient.getUsername())) {
+						response = new Response();
+						response.setType(ResponseType.LOGIN_FAIL);
+						objectOutputStream.writeObject(response);
+						return;
+					}
+				}
 				if(user.getIsDealer() == true) {
 					//Setting response values
 					response = new Response();
@@ -119,8 +146,9 @@ public class ClientHandler implements Runnable{
 					response.setDealer(true);
 					response.setType(ResponseType.LOGIN_SUCCESS);
 					playerID = 0;
+					username = fromClient.getUsername();
 					//Adding dealer to the game
-					PlayerData dealer = new PlayerData(user.getUsername(), 0, 0, true);
+					PlayerData dealer = new PlayerData(user.getUsername(), 0, 0, true, 0, 0);
 					
 					gamePlayers.addPlayer(dealer);
 					
@@ -133,6 +161,7 @@ public class ClientHandler implements Runnable{
 				}else {
 					response = new Response();
 					playerID = gameManager.getPlayerID();
+					username = fromClient.getUsername();
 					response.setPlayerID(playerID);
 					response.setType(ResponseType.LOGIN_SUCCESS);
 					response.setWinAmount(user.getWinAmount());
@@ -140,7 +169,7 @@ public class ClientHandler implements Runnable{
 					response.setBankRoll(user.getBankroll());
 					response.setUsername(user.getUsername());
 					
-					PlayerData player = new PlayerData(user.getUsername(), playerID, user.getBankroll(), false);
+					PlayerData player = new PlayerData(user.getUsername(), playerID, user.getBankroll(), false, user.getWinAmount(), user.getLossAmount());
 					gamePlayers.addPlayer(player);
 					
 					objectOutputStream.writeObject(response);
@@ -160,12 +189,12 @@ public class ClientHandler implements Runnable{
 	
 	//Method for adding player bet to the player
 	public void addPlayerBet(ClientMessage fromClient, List<PlayerData> allGamePlayers) {
-		for(int i = 0; i < gamePlayers.getNumPlayers(); i++) {
+		for(int i = 0; i < allGamePlayers.size(); i++) {
 			PlayerData gamePlayer = allGamePlayers.get(i);
 			System.out.println(gamePlayer.getUserName());
 			System.out.println(gamePlayer.getPlayerID());
 		}
-		for(int i = 0; i < gamePlayers.getNumPlayers(); i++) {
+		for(int i = 0; i < allGamePlayers.size(); i++) {
 			PlayerData gamePlayer = allGamePlayers.get(i);
 			if(fromClient.getPlayerID() == gamePlayer.getPlayerID()) {
 				gamePlayer.setBankRoll(gamePlayer.getBankRoll() - fromClient.getBetAmount());
@@ -248,7 +277,7 @@ public class ClientHandler implements Runnable{
 		
 	}
 	
-	public void reset() {
+	public void reset() throws IOException {
 		if(isDealer == true) {
 			handVal = 0;
 		}else {
@@ -258,6 +287,11 @@ public class ClientHandler implements Runnable{
 			handVal = 0;
 			initialDraw = true;
 		}
+		
+		//Send player the round has ended
+		response = new Response();
+		response.setType(ResponseType.ROUND_DONE);
+		objectOutputStream.writeObject(response);
 	}
 	
 	
@@ -265,7 +299,8 @@ public class ClientHandler implements Runnable{
 	    System.out.println("SENDING GAMESTATE");
 	    response = new Response();
 	    response.setType(ResponseType.UPDATE);
-
+	    
+	    updateRecord(allGamePlayers);
 	    boolean allPlayersUpdated = false;
 	    int count = 0;
 	    
@@ -278,7 +313,7 @@ public class ClientHandler implements Runnable{
 	    			if(playerData.getPlayerID() == 0 && playerID == 0) {
 	    				response = new Response();
 	    				response.setType(ResponseType.UPDATE);
-	    				response.setInitialDraw(initialDraw);
+	    				response.setInitialDraw(true);
 	    				response.setPlayerID(playerData.getPlayerID());
 	    				response.setHandValue(playerData.getHandValue());
 	    				if(playerData.getHandWithAce() != 0) {
@@ -310,7 +345,6 @@ public class ClientHandler implements Runnable{
 		    			response.setPlayerID(playerData.getPlayerID());
 		    			response.setHandValue(playerData.getHandValue());
 		    			response.setCardHandString(playerData.toStringCards());
-		    			System.out.println("Plaers bet amount" + playerData.getBetAmount());
 		    			response.setBetAmount(playerData.getBetAmount());
 		    			response.setBankRoll(playerData.getBankRoll());
 	    			}
@@ -346,6 +380,8 @@ public class ClientHandler implements Runnable{
 				break;
 			}
 		}
+		
+		
 		response = new Response();
 		response.setType(ResponseType.PLAYER_TURN_END);
 		objectOutputStream.writeObject(response);
@@ -425,7 +461,7 @@ public class ClientHandler implements Runnable{
 			}else {
 				stand = true;
 				turnEnd = true;
-				for(int i = 0; i < gamePlayers.getNumPlayers(); i++) {
+				for(int i = 0; i < allGamePlayers.size(); i++) {
 					PlayerData currPlayer = allGamePlayers.get(i);
 					if(currPlayer.getPlayerID() == playerID) {
 						currPlayer.setStand();
@@ -460,7 +496,6 @@ public class ClientHandler implements Runnable{
 		}
 		if(allPlayersDone) {
 			server.setAllClientsInitialDraw();
-			server.sendGameState();
 			debug(allGamePlayers);
 			for(int i = 0; i < allGamePlayers.size(); i++) {
 				PlayerData dealerCheck = allGamePlayers.get(i);
@@ -492,6 +527,7 @@ public class ClientHandler implements Runnable{
 					}
 				}
 			}
+			server.sendGameState();
 		}
 	}
 	
@@ -509,12 +545,92 @@ public class ClientHandler implements Runnable{
 				playerToDeposit.setBankRoll(playerToDeposit.getBankRoll() + fromClient.getDepAmount());
 				response = new Response();
 				response.setType(ResponseType.UPDATE_BANKROLL);
+				response.setPlayerID(playerToDeposit.getPlayerID());
 				response.setBankRoll(playerToDeposit.getBankRoll());
 				objectOutputStream.writeObject(response);
 				break;
 			}
+		}	
+	}
+	
+	public void logout(ClientMessage fromClient) throws IOException {
+		int playerIDRemove= fromClient.getPlayerID();
+		List<PlayerData> allGamePlayers = gamePlayers.getGamePlayers();
+		//Remove player from gamePlayers
+		for(int i = 0; i < allGamePlayers.size(); i++) {
+			PlayerData playerToRemove = allGamePlayers.get(i);
+			if(playerToRemove.getPlayerID() == playerIDRemove) {
+				System.out.println("REMOVING " + playerToRemove.getPlayerID());
+				allGamePlayers.remove(i);
+				break;
+			}
 		}
 		
+		//Decrementing all Id's > than id to remove
+		
+			for(int i = 0; i < allGamePlayers.size(); i++) {
+				PlayerData currPlayer = allGamePlayers.get(i);
+				int currPlayerID = currPlayer.getPlayerID();
+				
+				if(currPlayerID > playerIDRemove) {
+					currPlayer.setPlayerID(currPlayerID - 1);
+				}
+			}
+		
+
+		for(int i = 0; i < userData.size(); i++) {
+			UserData playerToUpdate = userData.get(i);
+			if(playerToUpdate.getUsername().equals(fromClient.getUsername())) {
+				playerToUpdate.setBankroll(fromClient.getBankRoll());
+				playerToUpdate.setWinAmount(fromClient.getWinAmount());
+				playerToUpdate.setLossAmount(fromClient.getLossAmount());
+			}
+		}
+		
+		userDataFile.saveData();
+		server.removeClient(username);
+		server.updateAllID();
+		gameManager.subtractID();
+		stopListening();
+		
+		objectOutputStream.close();
+		objectInputStream.close();
+		clientSocket.close();
+		
+	}
+	
+	
+	public void updatePlayerID(List<PlayerData> allGamePlayers) throws IOException {
+		for(int i = 0; i < allGamePlayers.size(); i++) {
+			PlayerData currPlayer = allGamePlayers.get(i);
+			System.out.println("CURRPLAYER USERNAME: " + currPlayer.getUserName() + "CLIENT USERNAME" + username + currPlayer.getPlayerID());
+			if(currPlayer.getUserName().equals(username)) {
+				System.out.println("UPDATING PLAYER ID" + currPlayer.getPlayerID());
+				this.playerID = currPlayer.getPlayerID();
+				response = new Response();
+				response.setType(ResponseType.UPDATE_PLAYERID);
+				response.setPlayerID(playerID);
+				objectOutputStream.writeObject(response);
+			}
+		}
+	}
+	
+	public void updateRecord(List<PlayerData> allGamePlayers) throws IOException {
+		for(int i = 0; i < allGamePlayers.size(); i++) {
+			PlayerData currPlayer = allGamePlayers.get(i);
+			if(currPlayer.getPlayerID() == playerID) {
+				response = new Response();
+				response.setPlayerID(currPlayer.getPlayerID());
+				response.setType(ResponseType.UPDATE_RECORD);
+				response.setWinAmount(currPlayer.getWinAmount());
+				response.setLossAmount(currPlayer.getLossAmount());
+				objectOutputStream.writeObject(response);
+			}
+		}
+	}
+	
+	public String getClientUsername() {
+		return username;
 	}
 	
 }

@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.LinkedList;
@@ -26,14 +27,19 @@ public class Dealer {
     private boolean isDealer;
     ObjectInputStream objectInputStream;
     private boolean roundStart = false;
+    
+    private volatile boolean listen = true;
+    
     private JFrame frame;
     private JTextArea gameInfoArea; // Displays dealer and player hands
     private JButton hitButton;
     private JButton startButton;
     private JButton endButton;
+    private JButton logoutButton;
 	private JPanel dealerPanel;
     private JLabel dealerLabel;
     private JPanel playersPanel;
+    private Thread serverListenThread;
     
     private List<PlayerData> allGamePlayers = new LinkedList<>();
     
@@ -54,7 +60,7 @@ public class Dealer {
     	
     	frame = new JFrame("BlackJack: Dealer");
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    	frame.setSize(800,600);
+    	frame.setSize(800,450);
     	
     	gameInfoArea = new JTextArea();
     	gameInfoArea.setEditable(false);
@@ -63,7 +69,7 @@ public class Dealer {
     	
 		JScrollPane scrollPane = new JScrollPane(gameInfoArea);
 		
-		String info = "Dealer\n"; 
+		String info = "Dealer"; 
 		
 		gameInfoArea.setText(info);
     	
@@ -73,10 +79,12 @@ public class Dealer {
     	startButton = new JButton("Start Round");
     	hitButton = new JButton("Hit");
     	endButton = new JButton("End Round");
+    	logoutButton = new JButton("Logout");
     	
     	buttons.add(startButton);
     	buttons.add(hitButton);
     	buttons.add(endButton);
+    	buttons.add(logoutButton);
     	
     	dealerPanel = new JPanel(new FlowLayout());
     	dealerLabel = new JLabel("Dealer");
@@ -127,7 +135,20 @@ public class Dealer {
 			playersPanel.add(playerSection);
 		}
     	
-    	
+		logoutButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					logout();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (ClassNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
     	
     	JPanel mainPanel = new JPanel();
     	mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -153,28 +174,38 @@ public class Dealer {
     }
     
     public void listenToServer() {
-    	new Thread(new Runnable() {
-			public void run() {
-				try {
-					while(true) {
-						
-						Response fromServer = (Response) objectInputStream.readObject();
-						if(fromServer.getType() != null) {
-							System.out.println(fromServer.getType());
-							processServerResponse(fromServer);
-						}
-						
-					}
-				}catch(Exception e){
-					e.printStackTrace();
-				}
-			}
-		}).start();
+    	serverListenThread = new Thread(new Runnable() {
+    		public void run() {
+		        while (listen) {
+		            try {
+		                Response fromServer = (Response) objectInputStream.readObject();
+		                processServerResponse(fromServer);
+		            }catch (EOFException e) {
+		                listen = false;
+		            }
+		            catch (Exception e) {
+		                e.printStackTrace();
+		            }
+		        }
+		    }
+		});
+		serverListenThread.start();
     }
+    
+    public void stopListening() {
+	    this.listen = false;
+	    if (serverListenThread.isAlive()) {
+	    	serverListenThread.interrupt();
+	    	}
+	}
+	
     
     public void processServerResponse(Response fromServer) throws InterruptedException {
     	System.out.println(fromServer.getType());
     	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
+    		for(int i = 0; i < allGamePlayers.size(); i++) {
+    			allGamePlayers.remove(i);
+    		}
     		startButton.setEnabled(true);
     	}else if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
     		Thread.sleep(300);
@@ -187,6 +218,7 @@ public class Dealer {
     }
  
     public void updateGUI(Response fromServer) {
+    	System.out.println("INITIAL DRAW? " + fromServer.getInitialDraw());
     	if(fromServer.getInitialDraw() == true) {
 			for(int i = 0; i < allGamePlayers.size(); i++) {
 				PlayerData clear = allGamePlayers.get(i);
@@ -255,7 +287,7 @@ public class Dealer {
 	    		String gameInfoAreaText = "Dealer\n" +
 	    							      "Dealer Hand: " + player.getHandValue();
 	    								if(player.getHandWithAce() != 0) {
-	    									gameInfoAreaText += "Ace Hand: " + player.getHandWithAce();
+	    									gameInfoAreaText += "\nAce Hand: " + player.getHandWithAce();
 	    								}
 	    			  
 	    	    gameInfoArea.setText(gameInfoAreaText);
@@ -297,6 +329,7 @@ public class Dealer {
     public void start_Round()throws IOException{
         client.sendStartRoundRequest();
 		startButton.setEnabled(false);
+		logoutButton.setEnabled(false);
     	
     }
 
@@ -307,6 +340,15 @@ public class Dealer {
     public void end_Round() throws IOException{
        client.sendEndRoundRequest();
        endButton.setEnabled(false);
+       logoutButton.setEnabled(true);
     }
+    
+    public void logout() throws IOException, ClassNotFoundException {
+		client.sendLogoutRequest("", playerID, 0, 0, 0);
+		stopListening();
+		frame.dispose();
+		
+		
+	}
 
 }

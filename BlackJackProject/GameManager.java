@@ -31,4 +31,10 @@ public class GameManager {
 		gameLogic.setDeck(deck);
 	}
 	
+	public void subtractID() {
+		if(count > 0) {
+			count--;
+		}
+	}
+	
 }
