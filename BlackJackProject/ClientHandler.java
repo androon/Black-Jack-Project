@@ -333,7 +333,6 @@ public class ClientHandler implements Runnable{
 			}
 		}
 		
-		
 		response = new Response();
 		response.setType(ResponseType.PLAYER_TURN_END);
 		objectOutputStream.writeObject(response);

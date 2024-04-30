@@ -238,11 +238,10 @@ public class Player {
 	        case ALL_BETS:
 	        	depositButton.setEnabled(false);
 	        	logoutButton.setEnabled(false);
+	        	allGamePlayers = new LinkedList<>();
+	            
 	            betGUI(); 
 	            
-	            for(int i = 0; i < allGamePlayers.size();i++) {
-	            	allGamePlayers.remove(i);
-	            }
 	            break;
 	        
 	        case PLAYER_TURN:
