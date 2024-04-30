@@ -213,9 +213,7 @@ public class Dealer {
     
     public void processServerResponse(Response fromServer) throws InterruptedException {
     	if(fromServer.getType() == ResponseType.REQUEST_START_ROUND) {
-    		for(int i = 0; i < allGamePlayers.size(); i++) {
-    			allGamePlayers.remove(i);
-    		}
+    		allGamePlayers = new LinkedList<>();
     		startButton.setEnabled(true);
     	}else if(fromServer.getType() == ResponseType.REQUEST_DEALER_HIT) {
     		Thread.sleep(300);
@@ -228,13 +226,6 @@ public class Dealer {
     }
  
     public void updateGUI(Response fromServer) {
-    	if(fromServer.getInitialDraw() == true) {
-			for(int i = 0; i < allGamePlayers.size(); i++) {
-				PlayerData clear = allGamePlayers.get(i);
-				clear.setHandWithAce(0);
-			}
-		}
-
 	    
 	    PlayerData data = new PlayerData();
 	    
