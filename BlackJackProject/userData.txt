@@ -1,2 +1,0 @@
-andrew,nguyen,false,10,10,10
-sandeep,deoja,true,0,0,0
