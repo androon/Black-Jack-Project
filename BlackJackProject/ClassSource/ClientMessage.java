@@ -1,3 +1,9 @@
+//package blackjack;
+/*
+ * Client Message class has attributes that will distinguish one client from the other
+ * Also the class has a boolean value isDealer which is set to true or false in the userData.txt file
+ * the boolean value will determine if the client is a player or a dealer
+ * */
 package ClassSource;
 import java.io.Serializable;
 

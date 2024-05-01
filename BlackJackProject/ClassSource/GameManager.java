@@ -1,3 +1,11 @@
+//package blackjack;
+
+
+
+/*
+ * Assigns each client with a immutable player ID
+ * Options to resetDeck
+ * */
 package ClassSource;
 
 public class GameManager {

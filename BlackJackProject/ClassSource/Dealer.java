@@ -1,3 +1,11 @@
+//package blackjack;
+
+/*
+ * Similar to player class, objects of this class are instantiated during the login process
+ * dealer class has attributes that are specific to the dealer in the game of black jack
+ * dealer actions include start round, end round, and hit
+ * */
+
 package ClassSource;
 
 import java.awt.BorderLayout;

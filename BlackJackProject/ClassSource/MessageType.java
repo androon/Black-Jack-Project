@@ -1,3 +1,7 @@
+//package blackjack;
+/*
+ *this enum contains all the messages that a client can initiate 
+ */
 package ClassSource;
 
 public enum MessageType {
@@ -6,3 +10,5 @@ public enum MessageType {
 	DEPOSIT, BET,
 	UNKNOWN
 }
+
+

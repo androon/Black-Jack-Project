@@ -1,3 +1,11 @@
+//package blackjack;
+
+/*
+ *Contains a list of all the players in the game 
+ *Not similar to list of clients as clients are dealer and players
+ *Has an instance of players data: attributes that are relevant to the game such as betAmount, actions
+ * 
+ * */
 package ClassSource;
 
 import java.util.LinkedList;

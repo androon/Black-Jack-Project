@@ -1,3 +1,8 @@
+//package blackjack;
+
+/*
+ * Card class
+ * */
 package ClassSource;
 
 public class Card{

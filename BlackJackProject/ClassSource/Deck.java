@@ -1,3 +1,12 @@
+//package blackjack;
+
+
+/*
+ * Deck of Cards Class
+ * Has a linkedlist of type Cards
+ * Option to initialize,shuffle, draw Cards
+ * */
+
 package ClassSource;
 
 import java.util.LinkedList;

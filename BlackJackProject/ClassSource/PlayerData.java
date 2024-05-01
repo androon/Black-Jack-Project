@@ -1,3 +1,12 @@
+//package blackjack;
+
+
+/*
+ * Class contains information related to a player during a round of blackjack
+ * initially the players start with default values such as betAmount 0, playerStand false
+ * as the game progresses, the values change
+ * at the end of the round, resetHand() changes the player data to default values again 
+ * */
 package ClassSource;
 
 import java.io.Serializable;

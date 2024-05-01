@@ -1,4 +1,14 @@
+//package blackjack;
+
 package ClassSource;
+
+
+/*
+ * Client class has the blueprint for creating a client that will connect to the server with a designated port
+ * All client have the ability read and write to the server with messages from the MessageType enum
+ * Some clients will be designated as a dealer and others as players
+ * */
+
 
 import java.awt.FlowLayout;
 
@@ -84,6 +94,9 @@ public class Client {
 				
 				
 	}
+	
+	
+	// Clients can perform the following actions by and pass the message as an object type over the network connection
 	
 	public void sendBetRequest(int playerID, int betAmount) throws IOException {
 		ClientMessage betMessage = new ClientMessage();
