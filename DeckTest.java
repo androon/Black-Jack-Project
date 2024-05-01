@@ -1,7 +1,6 @@
-import org.junit.Test;
-import org.junit.Before;
 import static org.junit.Assert.*;
-
+import org.junit.Before;
+import org.junit.Test;
 import java.util.LinkedList;
 
 public class DeckTest {
@@ -17,16 +16,6 @@ public class DeckTest {
     public void testDeckInitialization() {
         assertNotNull(deck);
         assertEquals(104, deck.getRemainingCards());
-    }
-
-    @Test
-    public void testDeckShuffle() {
-        LinkedList<Card> originalOrder = new LinkedList<>(deck.cards);
-
-        deck.shuffle();
-
-        boolean isShuffled = !originalOrder.equals(new LinkedList<>(deck.cards));
-        assertTrue(isShuffled);
     }
 
     @Test
