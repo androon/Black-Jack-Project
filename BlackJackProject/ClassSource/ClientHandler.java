@@ -1,7 +1,7 @@
 //package blackjack;
 
 /*
- * clientHandler creates multiple threads to establish multi client connection on a designated server port
+ * clientHandler processes client requests
  * implements an interface called runnable from Java
  * opens a communication channel by implementing objectInputStream and objectOutputStream for communication between clients and server
  * messages are received from clients are separated between players and dealers
