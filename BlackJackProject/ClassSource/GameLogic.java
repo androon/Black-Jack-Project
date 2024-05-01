@@ -1,3 +1,13 @@
+//package blackjack;
+
+/*
+ * Game logic is specific to the game of black jack
+ * contains actions that add cards to player handValue
+ * there is the first deal of the cards after all the bets are placed
+ * then when a hit action is sent by the client to the server
+ * also contains a method that checks the outcome of the round when all the players have either made a stand or their handValue exceeds 21
+ * the handValues are then compared of each players with the dealer to determine the winner of the hand
+ * */
 package ClassSource;
 
 import java.util.List;

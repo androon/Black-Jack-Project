@@ -1,3 +1,13 @@
+//package blackjack;
+
+
+/*
+ * Class is called to authenticate user credentials by comparing client username and password to the text file
+ * After a successful login, either a player class object is instantiated or a dealer class object is instantiated based on the text file settings
+ * The server either sends a message of successful login or failed login 
+ * */
+
+
 package ClassSource;
 
 import java.awt.GridBagConstraints;

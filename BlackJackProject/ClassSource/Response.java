@@ -1,3 +1,10 @@
+//package blackjack;
+
+
+/*
+ * Related to messageType class, this class contains messages from the server to the client
+ * this class also contains a list of all the game participants with their relevant information such as handValue, betAmount and such
+ * */
 package ClassSource;
 
 import java.io.Serializable;

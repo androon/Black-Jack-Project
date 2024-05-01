@@ -1,3 +1,11 @@
+//package blackjack;
+
+/*
+ * Player class is instantiated during the login process
+ * when authenticating login credentials, a client can be a player
+ * the class has attributes that relate to a player such as username, unique player ID, and such
+ * has buttons that can trigger events such as when a player hits, stand, and bets
+ * */
 package ClassSource;
 
 import java.awt.BorderLayout;

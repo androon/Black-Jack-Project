@@ -1,3 +1,8 @@
+//package blackjack;
+/*
+ * after reading from the userData.txt file, objects of the class are instantiated that contain the username, password
+ * each of the instances are then added to a linked list of type UserData
+ * */
 package ClassSource;
 
 public class UserData {

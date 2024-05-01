@@ -1,3 +1,20 @@
+//comments will be for JUNIT tests
+
+
+//package blackjack;
+
+
+
+/*
+ * Server class utilizes ServerSocket class to create a listening port to which a client can connect to
+ * when the server is run, it loads player and dealer data from a text file used to authenticate credentials
+ * Once a client connects to the port, clientHandler class is called
+ * Server class creates a list of connected clients through a Linked List
+ * Game of BlackJack requires to iterate through all the clients. The Server class has methods that help achieve this
+ * 
+ * */
+
+
 package ClassSource;
 
 import java.io.*;

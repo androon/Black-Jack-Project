@@ -1,3 +1,18 @@
+//package blackjack;
+
+/*
+ * clientHandler creates multiple threads to establish multi client connection on a designated server port
+ * implements an interface called runnable from Java
+ * opens a communication channel by implementing objectInputStream and objectOutputStream for communication between clients and server
+ * messages are received from clients are separated between players and dealers
+ * each thread receives messages for login, and the actions set in the Client class
+ * each message is processed accordingly to the type of message received and by the type of the client
+ * after the processing the message, the thread pushes back a response by the server to the client 
+ * a separate method,checkLogin(ClientMessage) validates user login
+ * addPlayerBet() for the betting system
+ * and the sendGameStatetoClient() method to update the clients attributes during the game of blackJack
+ * */
+
 package ClassSource;
 
 import java.io.IOException;

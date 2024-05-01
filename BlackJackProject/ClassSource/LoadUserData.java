@@ -1,3 +1,11 @@
+//package blackjack;
+
+
+/*
+ * this class is called when the server is instantiated
+ * reads a text file called userData.txt that contains login credentials and creates a linked list of each user with their username, password, whether the client is a dealer or player
+ * also has an access modifier to get that list  
+ * */
 package ClassSource;
 
 import java.io.File;

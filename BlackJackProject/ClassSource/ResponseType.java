@@ -1,3 +1,8 @@
+//package blackjack;
+/*
+ * enum with all the messages from the server side 
+ * */
+
 package ClassSource;
 public enum ResponseType {
 	LOGIN_SUCCESS, LOGIN_FAIL,GAME_STATE, PLAYER_TURN ,ROUND_DONE, ALL_BETS, PLAYER_TURN_END, ALL_PLAYERS_DONE, 
